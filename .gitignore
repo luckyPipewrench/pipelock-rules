@@ -1,0 +1,10 @@
+# Staging artifacts
+.stage-*
+*.bak
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary validation
+/tmp-validate/

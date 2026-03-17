@@ -1,0 +1,13 @@
+  - id: injection-system-tag-override
+    type: injection
+    status: stable
+    name: "System Tag Override"
+    description: "Detects fake system/override XML tags used to impersonate trusted message boundaries"
+    severity: high
+    confidence: high
+    references:
+      - "https://arxiv.org/abs/2404.13208"
+    tags:
+      - "owasp-llm:LLM01"
+    pattern:
+      regex: '<(?:system_instructions?|override|true_instructions?|real_instructions?|hidden_prompt|system_prompt|secret_instructions?|admin_message|internal_prompt)\s*>'

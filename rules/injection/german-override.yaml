@@ -1,0 +1,11 @@
+  - id: injection-german-core-override
+    type: injection
+    status: experimental
+    name: "German Core Override"
+    description: "Detects prompt injection override attempts in German"
+    severity: high
+    confidence: high
+    tags:
+      - "owasp-llm:LLM01"
+    pattern:
+      regex: '(?:ignoriere|vergiss|missachte|verwerfe)\s+(?:alle\s+)?(?:vorherigen|bisherigen|obigen)\s+(?:Anweisungen|Regeln|Vorgaben|Richtlinien)'

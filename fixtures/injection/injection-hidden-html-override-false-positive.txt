@@ -1,0 +1,5 @@
+<div style="display: none">Loading spinner placeholder</div>
+<span hidden>Screen reader alternative text for icon</span>
+<div aria-hidden="true">Decorative separator element</div>
+<p style="visibility: hidden">Accessibility helper text for form validation</p>
+<input hidden name="csrf_token" value="abc123">
