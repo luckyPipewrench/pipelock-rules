@@ -2,7 +2,12 @@ BUNDLE_NAME := pipelock-community
 BUNDLE_DIR := published/$(BUNDLE_NAME)
 BUNDLE_FILE := $(BUNDLE_DIR)/bundle.yaml
 
-.PHONY: compile validate sign verify test-fixtures publish clean
+# Temporary name for validation: avoids the pipelock-* prefix reservation
+# that blocks unsigned local installs of official-prefix bundles.
+VALIDATE_NAME := validate-community
+VALIDATE_DIR := /tmp/pipelock-validate-rules
+
+.PHONY: compile validate sign test-fixtures publish clean
 
 # Compile individual rule files into a single bundle.yaml
 compile:
@@ -10,24 +15,22 @@ compile:
 	@./scripts/compile.sh > $(BUNDLE_FILE)
 	@echo "Done. $$(grep -c '^  - id:' $(BUNDLE_FILE)) rules compiled."
 
-# Validate the compiled bundle with pipelock binary
+# Validate the compiled bundle: copy with a non-reserved name so
+# pipelock rules install accepts it without a signature.
 validate: compile
 	@echo "Validating bundle..."
-	@rm -rf /tmp/pipelock-validate-rules
-	@pipelock rules install --path $(BUNDLE_DIR) --allow-unsigned --rules-dir /tmp/pipelock-validate-rules 2>&1 || true
-	@rm -rf /tmp/pipelock-validate-rules
-	@echo "Validation complete."
+	@rm -rf $(VALIDATE_DIR)
+	@mkdir -p $(VALIDATE_DIR)/$(VALIDATE_NAME)
+	@sed 's/^name: pipelock-community/name: validate-community/' $(BUNDLE_FILE) > $(VALIDATE_DIR)/$(VALIDATE_NAME)/bundle.yaml
+	@pipelock rules install --path $(VALIDATE_DIR)/$(VALIDATE_NAME) --allow-unsigned --rules-dir $(VALIDATE_DIR)/installed
+	@rm -rf $(VALIDATE_DIR)
+	@echo "Validation passed."
 
 # Sign with production key (requires keystore with the agent's keypair)
 sign:
 	@test -n "$(AGENT)" || { echo "Usage: make sign AGENT=pipelock-official"; exit 1; }
 	@pipelock sign $(BUNDLE_FILE) --agent "$(AGENT)"
 	@echo "Signed: $(BUNDLE_FILE).sig"
-
-# Re-verify all installed bundles against the embedded keyring
-verify:
-	@pipelock rules verify --rules-dir $(BUNDLE_DIR)/..
-	@echo "Verification complete."
 
 # Run fixture tests against compiled bundle regexes
 test-fixtures:
@@ -45,4 +48,4 @@ publish: compile
 	echo "Published to $(BUNDLE_DIR)/$$VERSION/"
 
 clean:
-	rm -rf /tmp/pipelock-validate-rules
+	rm -rf $(VALIDATE_DIR)

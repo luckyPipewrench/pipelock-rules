@@ -18,14 +18,8 @@ jobs:
       - name: Install pipelock
         run: go install github.com/luckyPipewrench/pipelock/cmd/pipelock@latest
 
-      - name: Compile bundle
-        run: make compile
-
-      - name: Validate bundle (regex compilation + YAML structure)
-        run: |
-          rm -rf /tmp/validate-rules
-          pipelock rules install --path published/pipelock-community/ --allow-unsigned --rules-dir /tmp/validate-rules
-          rm -rf /tmp/validate-rules
+      - name: Compile and validate bundle
+        run: make validate
 
       - name: Test fixtures
         run: make test-fixtures

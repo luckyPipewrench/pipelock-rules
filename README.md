@@ -11,10 +11,10 @@ The `pipelock-community` bundle ships **28 detection rules**:
 | Category | Stable | Experimental | Examples |
 |----------|--------|--------------|----------|
 | **DLP** | 7 | 4 | Perplexity, 1Password, Vercel, Buildkite, Pulumi, Doppler, Shopify, Modal |
-| **Injection** | 6 | 4 | HTML comment hiding, system tag override, delimiter breakout, exfil imperative, multilingual (ES/FR/DE/CJK+RU) |
+| **Injection** | 6 | 4 | HTML comment hiding, system tag override, delimiter breakout, exfil imperative, multilingual (ES/FR/DE/ZH) |
 | **Tool-Poison** | 5 | 2 | Concealment, precall harvest, cross-tool replacement, exfil URL, prompt harvest, binary mimicry |
 
-These rules are **additive** -- they extend the 44 built-in DLP patterns and 20 built-in injection patterns already in pipelock. No overlap with built-in rules.
+These rules are **additive** -- they extend pipelock's built-in DLP and injection patterns. No overlap with built-in rules.
 
 ## Installing
 
@@ -22,7 +22,7 @@ These rules are **additive** -- they extend the 44 built-in DLP patterns and 20 
 pipelock rules install pipelock-community
 ```
 
-Requires pipelock v1.5.0+ (release binaries with embedded keyring). See the [pipelock docs](https://github.com/luckyPipewrench/pipelock/blob/main/docs/rules.md) for configuration options.
+Requires pipelock v1.5.0+ (release binaries with embedded keyring). The `min_pipelock` field in the bundle will be bumped to `1.5.0` at publication time. See the [pipelock docs](https://github.com/luckyPipewrench/pipelock/blob/main/docs/rules.md) for configuration options.
 
 ## Rule Status
 

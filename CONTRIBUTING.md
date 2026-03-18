@@ -17,7 +17,7 @@ Rules are welcome via pull request. Each rule must meet the quality bar below be
 3. Add fixture files in `fixtures/{type}/`:
    - `{rule-id}-true-positive.txt` -- one test string per line that MUST match
    - `{rule-id}-false-positive.txt` -- one test string per line that MUST NOT match
-   - Lines starting with `#` are comments
+   - Every non-empty line is tested (no comment syntax)
 
 4. Run validation:
    ```bash
@@ -31,7 +31,7 @@ Rules are welcome via pull request. Each rule must meet the quality bar below be
 
 ```yaml
   - id: dlp-example-api-key           # unique ID, prefixed with rule type
-    type: dlp                          # dlp, injection, or tool_poison
+    type: dlp                          # dlp, injection, or tool-poison
     status: stable                     # stable or experimental
     name: "Example API Key"            # human-readable name
     description: "Detects Example.com API keys"
@@ -77,4 +77,4 @@ Rules are welcome via pull request. Each rule must meet the quality bar below be
 |------|-------------|-----------------|-------------|
 | DLP | `dlp` | Credentials and secrets in outbound traffic | N/A |
 | Injection | `injection` | Prompt injection in fetched content and tool responses | N/A |
-| Tool-poison | `tool_poison` | Hidden instructions in MCP tool descriptions | `name` or `description` |
+| Tool-poison | `tool-poison` | Hidden instructions in MCP tool descriptions | `name` or `description` |
