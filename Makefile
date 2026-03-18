@@ -18,16 +18,16 @@ validate: compile
 	@rm -rf /tmp/pipelock-validate-rules
 	@echo "Validation complete."
 
-# Sign with production key (requires USB key mounted)
+# Sign with production key (requires keystore with the agent's keypair)
 sign:
-	@test -f "$(KEY)" || { echo "Usage: make sign KEY=/path/to/private.key"; exit 1; }
-	@pipelock sign $(BUNDLE_FILE) --key "$(KEY)"
+	@test -n "$(AGENT)" || { echo "Usage: make sign AGENT=pipelock-official"; exit 1; }
+	@pipelock sign $(BUNDLE_FILE) --agent "$(AGENT)"
 	@echo "Signed: $(BUNDLE_FILE).sig"
 
-# Verify signature against public key
+# Re-verify all installed bundles against the embedded keyring
 verify:
-	@test -f "$(PUBKEY)" || { echo "Usage: make verify PUBKEY=/path/to/public.key"; exit 1; }
-	@pipelock verify $(BUNDLE_FILE) --key "$(PUBKEY)"
+	@pipelock rules verify --rules-dir $(BUNDLE_DIR)/..
+	@echo "Verification complete."
 
 # Run fixture tests against compiled bundle regexes
 test-fixtures:

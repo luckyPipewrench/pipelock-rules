@@ -9,7 +9,7 @@ name: pipelock-community
 version: "2026.03.1"
 author: pipelock
 description: "Community detection rules for AI agent traffic"
-homepage: "https://pipelab.org/pipelock/rules"
+homepage: "https://pipelab.org/rules/pipelock-community"
 min_pipelock: "1.4.0"
 license: "Apache-2.0"
 

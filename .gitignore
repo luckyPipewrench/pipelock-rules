@@ -1,3 +1,6 @@
+# Signatures — belong on the Hugo site, not the authoring repo
+published/**/*.sig
+
 # Staging artifacts
 .stage-*
 *.bak
