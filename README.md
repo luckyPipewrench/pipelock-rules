@@ -22,7 +22,7 @@ These rules are **additive** -- they extend pipelock's built-in DLP and injectio
 pipelock rules install pipelock-community
 ```
 
-Requires pipelock v1.5.0+ (release binaries with embedded keyring). The `min_pipelock` field in the bundle will be bumped to `1.5.0` at publication time. See the [pipelock docs](https://github.com/luckyPipewrench/pipelock/blob/main/docs/rules.md) for configuration options.
+Requires pipelock v1.4.0+. Release binaries (Homebrew, GitHub Releases, Docker) from v1.5.0+ include the embedded keyring for signature verification. See the [pipelock docs](https://github.com/luckyPipewrench/pipelock/blob/main/docs/rules.md) for configuration options.
 
 ## Rule Status
 

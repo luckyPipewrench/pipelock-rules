@@ -4,7 +4,7 @@
 #   {rule-id}-true-positive.txt  — lines that MUST match
 #   {rule-id}-false-positive.txt — lines that MUST NOT match
 #
-# Uses Go's regexp package via a small helper, or falls back to grep -P.
+# Uses grep -P (PCRE) for regex matching with case-insensitive flag.
 set -euo pipefail
 
 PASS=0
@@ -20,7 +20,8 @@ extract_rules() {
   fi
   # Parse rule IDs and regexes (simple grep, not a full YAML parser)
   grep -A20 '^\s*- id:' "$bundle" | \
-    awk '/^\s*- id:/{id=$3} /^\s*regex:/{gsub(/^\s*regex:\s*/, ""); gsub(/^'\''|'\''$/, ""); print id " " $0}'
+    awk '/^\s*- id:/{id=$3} /^\s*regex:/{gsub(/^\s*regex:\s*/, ""); gsub(/^'\''|'\''$/, ""); print id " " $0}' | \
+    sed "s/''/'/g"  # unescape YAML doubled single quotes
 }
 
 while IFS=' ' read -r rule_id regex; do

@@ -223,6 +223,8 @@ rules:
     description: "Detects prompt injection override attempts in French"
     severity: high
     confidence: high
+    references:
+      - "https://arxiv.org/abs/2512.23684"
     tags:
       - "owasp-llm:LLM01"
     pattern:
@@ -235,6 +237,8 @@ rules:
     description: "Detects prompt injection override attempts in German"
     severity: high
     confidence: high
+    references:
+      - "https://arxiv.org/abs/2512.23684"
     tags:
       - "owasp-llm:LLM01"
     pattern:
@@ -275,6 +279,8 @@ rules:
     description: "Detects prompt injection override attempts in Spanish"
     severity: high
     confidence: high
+    references:
+      - "https://arxiv.org/abs/2512.23684"
     tags:
       - "owasp-llm:LLM01"
     pattern:
