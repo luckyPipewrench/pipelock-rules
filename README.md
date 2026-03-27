@@ -1,12 +1,47 @@
 # pipelock-rules
 
-Official community rule bundles for [Pipelock](https://github.com/luckyPipewrench/pipelock), the open-source agent firewall.
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
+[![Pipelock](https://img.shields.io/badge/pipelock-v1.4.0%2B-00e5a0)](https://github.com/luckyPipewrench/pipelock)
 
-Community rules extend pipelock's built-in detection patterns with additional DLP, injection, and tool-poison rules that ship on a faster cadence than the core binary.
+Detection rule bundles for [Pipelock](https://github.com/luckyPipewrench/pipelock), the open-source agent firewall.
 
-## What's Included
+Pipelock ships with built-in DLP, injection, and tool-poison scanners. Rule bundles extend those defaults with additional patterns that ship on a faster cadence than the core binary. Bundles are Ed25519-signed, versioned, and additive (they never override built-in rules).
 
-The `pipelock-community` bundle ships **28 detection rules**:
+## How Bundles Work
+
+A **rule bundle** is a signed YAML file containing detection rules. Pipelock loads bundles at startup and merges them with its built-in patterns.
+
+```
+┌──────────────────────────────────────────────────────┐
+│                    pipelock scanner                   │
+│                                                      │
+│  Built-in patterns     +   Rule bundles (additive)   │
+│  ├── 70+ DLP regexes       ├── pipelock-community    │
+│  ├── injection detection   ├── acme-corp-internal    │
+│  └── tool-poison checks    └── your-bundle-here      │
+│                                                      │
+└──────────────────────────────────────────────────────┘
+```
+
+Anyone can create a bundle. Security teams build internal bundles for company-specific credentials. Researchers publish bundles for new attack patterns. Each bundle is independently signed and versioned.
+
+```bash
+# Install the official community bundle
+pipelock rules install pipelock-community
+
+# Install a third-party bundle from a URL
+pipelock rules install --source https://example.com/bundles/acme-rules acme-rules
+
+# Install from a local path (for development)
+pipelock rules install --path ./my-bundle/ --allow-unsigned
+
+# List what's installed
+pipelock rules list
+```
+
+## The Community Bundle
+
+This repo contains **pipelock-community**, the official community bundle. It ships 28 detection rules across three categories:
 
 | Category | Stable | Experimental | Examples |
 |----------|--------|--------------|----------|
@@ -14,20 +49,33 @@ The `pipelock-community` bundle ships **28 detection rules**:
 | **Injection** | 6 | 4 | HTML comment hiding, system tag override, delimiter breakout, exfil imperative, multilingual (ES/FR/DE/ZH) |
 | **Tool-Poison** | 5 | 2 | Concealment, precall harvest, cross-tool replacement, exfil URL, prompt harvest, binary mimicry |
 
-These rules are **additive** -- they extend pipelock's built-in DLP and injection patterns. No overlap with built-in rules.
-
-## Installing
+**Stable** rules (18) have true-positive and false-positive fixtures, plus primary source citations.
+**Experimental** rules (10) have true-positive fixtures only. They may have higher false positive rates and are disabled by default.
 
 ```bash
 pipelock rules install pipelock-community
 ```
 
-Requires pipelock v1.4.0+. Release binaries (Homebrew, GitHub Releases, Docker) from v1.5.0+ include the embedded keyring for signature verification. See the [pipelock docs](https://github.com/luckyPipewrench/pipelock/blob/main/docs/rules.md) for configuration options.
+Enable experimental rules in your config:
 
-## Rule Status
+```yaml
+rules:
+  include_experimental: true
+```
 
-- **Stable** (18 rules): Validated regexes with true-positive and false-positive fixtures. Primary source citations for every pattern.
-- **Experimental** (10 rules): True-positive fixtures only. May have higher false positive rates. Disabled by default unless `include_experimental: true` is set in your config.
+## Creating Your Own Bundle
+
+A bundle is a signed YAML file with a header and a list of rules. Three rule types are supported:
+
+| Type | `type` value | What it detects |
+|------|-------------|-----------------|
+| DLP | `dlp` | Credentials and secrets in outbound traffic |
+| Injection | `injection` | Prompt injection in fetched content and tool responses |
+| Tool-poison | `tool-poison` | Hidden instructions in MCP tool descriptions |
+
+Bundles are Ed25519-signed and versioned. Official bundles are verified against the keyring embedded in pipelock release binaries. Third-party bundles are verified against keys in the user's `trusted_keys` config.
+
+See the [full bundle authoring guide](https://github.com/luckyPipewrench/pipelock/blob/main/docs/rules.md#creating-your-own-bundle) for the YAML schema, signing, distribution, and trust model.
 
 ## Development
 
@@ -42,10 +90,35 @@ make validate
 make test-fixtures
 ```
 
+### Repository layout
+
+```
+rules/
+  dlp/              One YAML file per DLP pattern
+  injection/        One YAML file per injection pattern
+  tool-poison/      One YAML file per tool-poison pattern
+fixtures/
+  dlp/              True/false positive test strings
+  injection/
+  tool-poison/
+published/
+  pipelock-community/
+    bundle.yaml     Compiled bundle (all rules merged)
+    bundle.yaml.sig Ed25519 signature
+scripts/
+  compile.sh        Merges rule files into bundle.yaml
+  test-fixtures.sh  Validates every regex against fixtures
+```
+
 ## Contributing
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for how to add a new rule.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for how to add a new rule. Every rule needs:
+
+- An RE2-compatible regex
+- At least one true-positive fixture
+- A primary source citation (stable rules)
+- At least one false-positive fixture (stable rules)
 
 ## License
 
-Apache 2.0 -- see [LICENSE](LICENSE).
+Apache 2.0. See [LICENSE](LICENSE).
