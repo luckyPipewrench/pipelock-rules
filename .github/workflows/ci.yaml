@@ -29,6 +29,8 @@ jobs:
           scan-diff: 'true'
           fail-on-findings: 'true'
           test-vectors: 'false'
+          exclude-paths: |
+            scripts/
 
   validate:
     name: Validate bundle
