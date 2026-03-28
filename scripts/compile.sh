@@ -17,6 +17,7 @@ rules:
 HEADER
 
 # Concatenate all rule files in sorted order (type dirs, then filenames)
+{
 for dir in rules/dlp rules/injection rules/tool-poison; do
   if [ -d "$dir" ]; then
     for f in $(ls "$dir"/*.yaml 2>/dev/null | sort); do
@@ -25,3 +26,4 @@ for dir in rules/dlp rules/injection rules/tool-poison; do
     done
   fi
 done
+} | sed -e :a -e '/^\n*$/{$d;N;ba' -e '}'

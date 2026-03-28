@@ -417,4 +417,3 @@ rules:
     pattern:
       regex: '(?:system\s+prompt|developer\s+message|chain\s+of\s+thought|hidden\s+instructions?|internal\s+(?:state|context)).{0,60}(?:return|send|export|reveal|collect|extract|include|forward)'
       scan_field: description
-

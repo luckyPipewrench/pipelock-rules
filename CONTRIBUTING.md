@@ -2,6 +2,12 @@
 
 Rules are welcome via pull request. Each rule must meet the quality bar below before merge.
 
+## Prerequisites
+
+- [Pipelock](https://github.com/luckyPipewrench/pipelock) v1.4.0+ (for `make validate`)
+- Bash (for `make compile` and `make test-fixtures`)
+- A regex that works with Go's RE2 engine (no lookahead/lookbehind, no backreferences)
+
 ## Adding a New Rule
 
 1. Create a YAML file in the appropriate directory:
@@ -15,14 +21,15 @@ Rules are welcome via pull request. Each rule must meet the quality bar below be
    - Tool-poison: `{behavior}.yaml`
 
 3. Add fixture files in `fixtures/{type}/`:
-   - `{rule-id}-true-positive.txt` -- one test string per line that MUST match
-   - `{rule-id}-false-positive.txt` -- one test string per line that MUST NOT match
+   - `{rule-id}-true-positive.txt`: one test string per line that MUST match
+   - `{rule-id}-false-positive.txt`: one test string per line that MUST NOT match
    - Every non-empty line is tested (no comment syntax)
 
 4. Run validation:
    ```bash
    make compile
    make test-fixtures
+   make validate
    ```
 
 5. Submit a PR.
@@ -78,3 +85,24 @@ Rules are welcome via pull request. Each rule must meet the quality bar below be
 | DLP | `dlp` | Credentials and secrets in outbound traffic | N/A |
 | Injection | `injection` | Prompt injection in fetched content and tool responses | N/A |
 | Tool-poison | `tool-poison` | Hidden instructions in MCP tool descriptions | `name` or `description` |
+
+## Pull Requests
+
+- PRs are squash-merged into `main`
+- CI must pass: bundle validation, fixture tests, YAML lint
+- All review threads must be resolved before merge
+
+## Development Workflow
+
+1. Fork the repo and create a branch (`feat/new-rule-name` or `fix/rule-id`)
+2. Add your rule and fixtures
+3. Run `make compile && make test-fixtures && make validate`
+4. Push and open a PR
+
+## Contributor License Agreement
+
+By submitting a pull request, you agree that your contributions are licensed under the [Apache License 2.0](LICENSE), the same license as this project.
+
+## Security
+
+If a regex could be exploited for ReDoS or other abuse, use the [security advisory process](https://github.com/luckyPipewrench/pipelock/security/advisories). See [SECURITY.md](SECURITY.md) for details.
