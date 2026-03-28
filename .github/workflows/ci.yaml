@@ -4,15 +4,37 @@ on:
   push:
     branches: [main]
   pull_request:
+    branches: [main]
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.ref }}
   cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 
+permissions:
+  contents: read
+
 jobs:
+  security-scan:
+    name: Pipelock scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Pipelock Scan
+        uses: luckyPipewrench/pipelock@cfec5f86720e24f1ee8d37eb6ad652a7efe5d868 # v2
+        with:
+          scan-diff: 'true'
+          fail-on-findings: 'true'
+          test-vectors: 'false'
+
   validate:
     name: Validate bundle
+    needs: [security-scan]
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -21,14 +43,16 @@ jobs:
           go-version: '1.25'
 
       - name: Install pipelock
-        run: go install github.com/luckyPipewrench/pipelock/cmd/pipelock@latest
+        run: go install github.com/luckyPipewrench/pipelock/cmd/pipelock@v2.0.0
 
       - name: Compile and validate bundle
         run: make validate
 
   test-fixtures:
     name: Test fixtures
+    needs: [security-scan]
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
@@ -37,7 +61,9 @@ jobs:
 
   yaml-lint:
     name: Lint YAML
+    needs: [security-scan]
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
