@@ -43,7 +43,7 @@ jobs:
           go-version: '1.25'
 
       - name: Install pipelock
-        run: go install github.com/luckyPipewrench/pipelock/cmd/pipelock@v2.0.0
+        run: go install github.com/luckyPipewrench/pipelock/cmd/pipelock@v1.5.0
 
       - name: Compile and validate bundle
         run: make validate
