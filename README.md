@@ -1,7 +1,11 @@
-# pipelock-rules
+<p align="center">
+  <img src="assets/readme-header.png" alt="pipelock-rules: Community Detection Rules for AI Agent Security" width="640">
+</p>
 
-[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](LICENSE)
-[![Pipelock](https://img.shields.io/badge/pipelock-v1.4.0%2B-00e5a0)](https://github.com/luckyPipewrench/pipelock)
+<p align="center">
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License"></a>
+  <a href="https://github.com/luckyPipewrench/pipelock"><img src="https://img.shields.io/badge/pipelock-v2.0.0%2B-00e5a0" alt="Pipelock"></a>
+</p>
 
 Detection rule bundles for [Pipelock](https://github.com/luckyPipewrench/pipelock), the open-source agent firewall.
 
