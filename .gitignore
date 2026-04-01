@@ -5,6 +5,9 @@ published/**/*.sig
 .stage-*
 *.bak
 
+# IDE
+.idea/
+
 # OS
 .DS_Store
 Thumbs.db
