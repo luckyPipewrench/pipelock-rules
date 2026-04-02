@@ -7,7 +7,7 @@ BUNDLE_FILE := $(BUNDLE_DIR)/bundle.yaml
 VALIDATE_NAME := validate-community
 VALIDATE_DIR := /tmp/pipelock-validate-rules
 
-.PHONY: compile validate sign test-fixtures publish clean
+.PHONY: compile validate sign test-fixtures publish clean stats
 
 # Compile individual rule files into a single bundle.yaml
 compile:
@@ -49,3 +49,14 @@ publish: compile
 
 clean:
 	rm -rf $(VALIDATE_DIR)
+
+# Print canonical stats from the compiled bundle.
+# Uses anchored patterns matching the bundle schema to avoid false positives.
+stats:
+	@echo "# pipelock-rules stats"
+	@echo "rules_total: $$(grep -c '^  - id:' $(BUNDLE_FILE))"
+	@echo "rules_dlp: $$(grep -c '^    type: dlp' $(BUNDLE_FILE))"
+	@echo "rules_injection: $$(grep -c '^    type: injection' $(BUNDLE_FILE))"
+	@echo "rules_tool_poison: $$(grep -c '^    type: tool-poison' $(BUNDLE_FILE))"
+	@echo "rules_stable: $$(grep -c '^    status: stable' $(BUNDLE_FILE))"
+	@echo "rules_experimental: $$(grep -c '^    status: experimental' $(BUNDLE_FILE))"
