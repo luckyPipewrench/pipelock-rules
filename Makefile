@@ -50,12 +50,13 @@ publish: compile
 clean:
 	rm -rf $(VALIDATE_DIR)
 
-# Print canonical stats from the compiled bundle
+# Print canonical stats from the compiled bundle.
+# Uses anchored patterns matching the bundle schema to avoid false positives.
 stats:
 	@echo "# pipelock-rules stats"
-	@echo "rules_total: $$(grep -c '  name: ' $(BUNDLE_FILE))"
-	@echo "rules_dlp: $$(grep -B2 'type: dlp' $(BUNDLE_FILE) | grep -c '  - id:')"
-	@echo "rules_injection: $$(grep -B2 'type: injection' $(BUNDLE_FILE) | grep -c '  - id:')"
-	@echo "rules_tool_poison: $$(grep -B2 'type: tool-poison' $(BUNDLE_FILE) | grep -c '  - id:')"
-	@echo "rules_stable: $$(grep -c 'status: stable' $(BUNDLE_FILE))"
-	@echo "rules_experimental: $$(grep -c 'status: experimental' $(BUNDLE_FILE))"
+	@echo "rules_total: $$(grep -c '^  - id:' $(BUNDLE_FILE))"
+	@echo "rules_dlp: $$(grep -c '^    type: dlp' $(BUNDLE_FILE))"
+	@echo "rules_injection: $$(grep -c '^    type: injection' $(BUNDLE_FILE))"
+	@echo "rules_tool_poison: $$(grep -c '^    type: tool-poison' $(BUNDLE_FILE))"
+	@echo "rules_stable: $$(grep -c '^    status: stable' $(BUNDLE_FILE))"
+	@echo "rules_experimental: $$(grep -c '^    status: experimental' $(BUNDLE_FILE))"
