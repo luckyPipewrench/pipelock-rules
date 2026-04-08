@@ -114,6 +114,13 @@ scripts/
   test-fixtures.sh  Validates every regex against fixtures
 ```
 
+## Learn more
+
+- [What is an Agent Firewall?](https://pipelab.org/agent-firewall/) — how Pipelock scans agent traffic
+- [Community Rules](https://pipelab.org/learn/community-rules/) — install guide and rule documentation
+- [MCP Tool Poisoning](https://pipelab.org/learn/mcp-tool-poisoning/) — why tool-poison rules exist
+- [Pipelock on GitHub](https://github.com/luckyPipewrench/pipelock)
+
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) for how to add a new rule. Every rule needs:
