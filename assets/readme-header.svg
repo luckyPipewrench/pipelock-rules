@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="280" viewBox="0 0 800 280">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0f172a"/>
+      <stop offset="100%" style="stop-color:#1e293b"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="280" rx="12" fill="url(#bg)"/>
+
+  <!-- Top accent line -->
+  <rect x="0" y="0" width="800" height="3" rx="12" fill="#00e5a0"/>
+
+  <!-- Shield with document icon -->
+  <g transform="translate(255, 90)">
+    <!-- Shield outline -->
+    <path d="M0-45 L38-30 L38 12 Q38 38 0 52 Q-38 38 -38 12 L-38-30 Z"
+          fill="none" stroke="#00e5a0" stroke-width="2.5" opacity="0.9"/>
+    <!-- Document lines inside shield -->
+    <line x1="-16" y1="-15" x2="16" y2="-15" stroke="#00e5a0" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+    <line x1="-16" y1="-4" x2="12" y2="-4" stroke="#00e5a0" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+    <line x1="-16" y1="7" x2="8" y2="7" stroke="#00e5a0" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+    <line x1="-16" y1="18" x2="14" y2="18" stroke="#00e5a0" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+  </g>
+
+  <!-- Title -->
+  <text x="320" y="100" text-anchor="start"
+        font-family="ui-monospace, 'Cascadia Code', 'Source Code Pro', Menlo, monospace"
+        font-size="36" font-weight="700" fill="#f1f5f9" letter-spacing="-0.5">
+    pipelock-rules
+  </text>
+
+  <!-- Subtitle -->
+  <text x="320" y="135" text-anchor="start"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+        font-size="18" fill="#94a3b8">
+    Community Detection Rules
+  </text>
+  <text x="320" y="160" text-anchor="start"
+        font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif"
+        font-size="18" fill="#94a3b8">
+    for AI Agent Security
+  </text>
+
+  <!-- Bottom accent line -->
+  <rect x="0" y="277" width="800" height="3" rx="12" fill="#00e5a0"/>
+</svg>
