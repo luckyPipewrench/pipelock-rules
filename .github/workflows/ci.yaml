@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 0
 
       - name: Pipelock Scan
-        uses: luckyPipewrench/pipelock@cfec5f86720e24f1ee8d37eb6ad652a7efe5d868 # v2
+        uses: luckyPipewrench/pipelock@51d5289495b6986e1346975b82c419e80ceadcd0 # v2
         with:
           scan-diff: 'true'
           fail-on-findings: 'true'
