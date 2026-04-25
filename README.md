@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License"></a>
-  <a href="https://github.com/luckyPipewrench/pipelock"><img src="https://img.shields.io/badge/pipelock-v2.0.0%2B-00e5a0" alt="Pipelock"></a>
+  <a href="https://github.com/luckyPipewrench/pipelock"><img src="https://img.shields.io/badge/pipelock-v2.3.0%2B-00e5a0" alt="Pipelock"></a>
 </p>
 
 Detection rule bundles for [Pipelock](https://github.com/luckyPipewrench/pipelock), the open-source agent firewall.

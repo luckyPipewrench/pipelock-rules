@@ -42,7 +42,7 @@ jobs:
 
       - name: Install pipelock
         run: |
-          curl -sL "https://github.com/luckyPipewrench/pipelock/releases/download/v2.0.0/pipelock_2.0.0_linux_amd64.tar.gz" | tar xz -C /usr/local/bin pipelock
+          curl -sL "https://github.com/luckyPipewrench/pipelock/releases/download/v2.3.0/pipelock_2.3.0_linux_amd64.tar.gz" | tar xz -C /usr/local/bin pipelock
           pipelock --version
 
       - name: Compile and validate bundle
