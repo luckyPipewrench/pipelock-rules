@@ -1,0 +1,5 @@
+last admission was complex
+discharged from facility
+visit completed
+created_date: 2024-03-15
+unrelated date 03/15/2024

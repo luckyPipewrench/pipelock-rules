@@ -1,0 +1,15 @@
+  - id: dlp-pii-vehicle-vin
+    type: dlp
+    status: experimental
+    name: "Vehicle VIN"
+    description: "Detects 17-character VINs (excludes I, O, Q per ISO 3779). Experimental due to potential overlap with random alphanumeric strings of the same length."
+    severity: low
+    confidence: medium
+    references:
+      - "https://www.iso.org/standard/52200.html"
+    tags:
+      - "category:pii"
+      - "hipaa:identifier-12"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '\b[A-HJ-NPR-Z0-9]{17}\b'

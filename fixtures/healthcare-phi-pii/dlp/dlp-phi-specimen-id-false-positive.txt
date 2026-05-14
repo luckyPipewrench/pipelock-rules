@@ -1,0 +1,5 @@
+specimen_id: TEST
+sample_no: SAMPLE
+aliquot: ABC
+12345678 alone
+the specimen was collected

@@ -1,0 +1,5 @@
+patient_ip: 192.168.1.50
+user_address=10.0.0.5
+session_ip: 172.16.45.99
+client_ip=203.0.113.42
+patient ip 8.8.8.8

@@ -1,0 +1,4 @@
+MSH|^~\&|EPIC|MAYO
+the PID was 1
+PIDDLE|something|else
+not at start: PID|x

@@ -33,10 +33,14 @@ jobs:
             scripts/
 
   validate:
-    name: Validate bundle
+    name: Validate bundle (${{ matrix.bundle }})
     needs: [security-scan]
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        bundle: [pipelock-community, healthcare-phi-pii]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -54,24 +58,32 @@ jobs:
           pipelock --version
 
       - name: Compile and validate bundle
-        run: make validate
+        run: BUNDLE_NAME=${{ matrix.bundle }} make validate
 
   test-fixtures:
-    name: Test fixtures
+    name: Test fixtures (${{ matrix.bundle }})
     needs: [security-scan]
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        bundle: [pipelock-community, healthcare-phi-pii]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Run fixture tests
-        run: make test-fixtures
+        run: BUNDLE_NAME=${{ matrix.bundle }} make test-fixtures
 
   yaml-lint:
-    name: Lint YAML
+    name: Lint YAML (${{ matrix.bundle }})
     needs: [security-scan]
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        bundle: [pipelock-community, healthcare-phi-pii]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -80,4 +92,5 @@ jobs:
 
       - name: Lint compiled bundle
         run: |
-          yamllint -d '{extends: default, rules: {line-length: {max: 300}, document-start: disable, truthy: disable, empty-lines: {max: 1}}}' published/pipelock-community/bundle.yaml
+          BUNDLE_NAME=${{ matrix.bundle }} make compile
+          yamllint -d '{extends: default, rules: {line-length: {max: 300}, document-start: disable, truthy: disable, empty-lines: {max: 1}}}' "published/${{ matrix.bundle }}/bundle.yaml"

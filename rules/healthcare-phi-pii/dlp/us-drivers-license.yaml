@@ -1,0 +1,15 @@
+  - id: dlp-pii-us-drivers-license
+    type: dlp
+    status: stable
+    name: "US Driver's License (labeled)"
+    description: "Detects labeled US driver's license numbers (mixed alphanumeric, varied state formats)."
+    severity: high
+    confidence: medium
+    references:
+      - "https://www.aamva.org/topics/driver-licensing"
+    tags:
+      - "category:pii"
+      - "hipaa:identifier-11"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(driver[\s_-]?(s|''s)?[\s_-]?(license|lic)|\bdl|\bdln)[\s:#=]{1,4}[A-Z]{0,3}\d{4,14}[A-Z]?\b'

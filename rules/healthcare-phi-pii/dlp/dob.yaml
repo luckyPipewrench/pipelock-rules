@@ -1,0 +1,15 @@
+  - id: dlp-phi-dob
+    type: dlp
+    status: stable
+    name: "Date of Birth (labeled)"
+    description: "Detects labeled date-of-birth values in common US/ISO formats and month-name forms."
+    severity: high
+    confidence: high
+    references:
+      - "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-3"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(dob|d\.o\.b\.|date[\s_-]?of[\s_-]?birth|birth[\s_-]?date)[\s:#=]{1,4}(?:\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4}|\d{4}[/\-\.]\d{1,2}[/\-\.]\d{1,2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+\d{4})'

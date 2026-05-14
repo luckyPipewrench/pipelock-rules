@@ -1,0 +1,15 @@
+  - id: dlp-phi-zip-plus-4
+    type: dlp
+    status: experimental
+    name: "ZIP+4 Postal Code"
+    description: "Detects ZIP+4 postal codes — HIPAA Safe Harbor restricts geographic subdivisions smaller than state. Experimental because 5+4 digit sequences may appear in unrelated structured data."
+    severity: low
+    confidence: low
+    references:
+      - "https://faq.usps.com/s/article/ZIP-Code-The-Basics"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-2"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '\b\d{5}-\d{4}\b'

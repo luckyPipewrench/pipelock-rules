@@ -1,0 +1,8 @@
+admission_date: 03/15/2024
+admit-date=2024-03-15
+discharge_date: 03/20/2024
+service date: Mar 15, 2024
+encounter_date=2024/03/15
+visit_date: 03-15-2024
+death_date: 04/01/2024
+deceased_date: 2024-04-01

@@ -1,0 +1,6 @@
+MRN: 123456
+mrn=AB1234567
+medical_record_number: 9876543
+MRN#A9988776
+medical-record-no: 12345
+medical record number 4567890

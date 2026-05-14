@@ -1,0 +1,15 @@
+  - id: dlp-pii-aba-routing
+    type: dlp
+    status: stable
+    name: "US ABA Routing Number (labeled)"
+    description: "Detects labeled 9-digit US bank routing (ABA RTN) numbers."
+    severity: high
+    confidence: medium
+    references:
+      - "https://www.frbservices.org/EPaymentsDirectory/about.html"
+    tags:
+      - "category:pii"
+      - "hipaa:identifier-10"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(routing|aba|rtn)[\s:#=]{1,4}\d{9}\b'

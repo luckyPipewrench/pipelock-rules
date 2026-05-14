@@ -1,0 +1,14 @@
+  - id: dlp-pii-ein
+    type: dlp
+    status: stable
+    name: "IRS Employer Identification Number (labeled)"
+    description: "Detects labeled EIN in NN-NNNNNNN format."
+    severity: high
+    confidence: high
+    references:
+      - "https://www.irs.gov/businesses/small-businesses-self-employed/employer-id-numbers"
+    tags:
+      - "category:pii"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(ein|employer[\s_-]?(id|identification|tax[\s_-]?id))[\s:#=]{1,4}\d{2}-\d{7}\b'

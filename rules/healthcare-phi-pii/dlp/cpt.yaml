@@ -1,0 +1,14 @@
+  - id: dlp-phi-cpt
+    type: dlp
+    status: stable
+    name: "CPT/HCPCS Procedure Code (labeled)"
+    description: "Detects labeled CPT or HCPCS procedure codes (5-digit format)."
+    severity: medium
+    confidence: high
+    references:
+      - "https://www.ama-assn.org/practice-management/cpt"
+    tags:
+      - "category:phi"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(cpt|hcpcs|procedure[\s_-]?code)[\s:#=]{1,4}\d{5}\b'

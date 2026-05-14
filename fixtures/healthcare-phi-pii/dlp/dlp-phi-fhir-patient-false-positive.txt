@@ -1,0 +1,4 @@
+"resourceType":"Observation"
+"resourceType":"Practitioner"
+the patient was discharged
+url: /patients/list

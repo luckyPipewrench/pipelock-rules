@@ -1,0 +1,14 @@
+  - id: dlp-pii-itin
+    type: dlp
+    status: stable
+    name: "IRS Individual Taxpayer Identification Number"
+    description: "Detects US ITIN: starts with 9, group 70-88 or 90-99 (excluding 89,92,93)."
+    severity: critical
+    confidence: high
+    references:
+      - "https://www.irs.gov/individuals/individual-taxpayer-identification-number"
+    tags:
+      - "category:pii"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '\b9\d{2}-(?:7[0-9]|8[0-8]|9[0-24-9])-\d{4}\b'

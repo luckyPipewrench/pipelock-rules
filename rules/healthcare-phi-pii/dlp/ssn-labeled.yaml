@@ -1,0 +1,15 @@
+  - id: dlp-phi-ssn-labeled
+    type: dlp
+    status: stable
+    name: "US Social Security Number (labeled)"
+    description: "Detects labeled US SSN preceded by an SSN/social-security marker."
+    severity: critical
+    confidence: high
+    references:
+      - "https://www.ssa.gov/employer/randomization.html"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-7"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(ssn|social[\s_-]?security[\s_-]?(no|number|#)?)[\s:#=]{1,4}(?:00[1-9]|0[1-9]\d|[1-578]\d{2}|6[0-57-9]\d|66[0-57-9])[\s\-]?(?:0[1-9]|[1-9]\d)[\s\-]?(?:000[1-9]|00[1-9]\d|0[1-9]\d{2}|[1-9]\d{3})\b'

@@ -1,0 +1,6 @@
+specimen_id: 12345678
+sample_no: SPC1234567
+aliquot_id=A0098765
+tube_number: 1234567
+barcode_id: BC123456789
+specimen number: 9876543

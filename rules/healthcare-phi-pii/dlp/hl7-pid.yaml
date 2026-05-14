@@ -1,0 +1,14 @@
+  - id: dlp-phi-hl7-pid
+    type: dlp
+    status: stable
+    name: "HL7 v2 PID Segment"
+    description: "Detects HL7 v2.x Patient Identification (PID) segments at start of line."
+    severity: critical
+    confidence: high
+    references:
+      - "https://www.hl7.org/implement/standards/product_brief.cfm?product_id=185"
+    tags:
+      - "category:phi"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?m)^PID\|'

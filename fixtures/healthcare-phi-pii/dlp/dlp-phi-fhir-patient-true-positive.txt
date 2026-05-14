@@ -1,0 +1,5 @@
+"resourceType":"Patient"
+"resourceType" : "Patient"
+GET /Patient/abc-123
+PUT /Patient/xyz.example.id
+"resourceType":  "Patient"

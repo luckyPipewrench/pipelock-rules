@@ -1,0 +1,15 @@
+  - id: dlp-phi-admit-discharge-date
+    type: dlp
+    status: stable
+    name: "Admission/Discharge/Service/Death Date (labeled)"
+    description: "Detects labeled dates of admission, discharge, service, encounter, visit, or death — HIPAA Safe Harbor restricts all dates more specific than year for an individual."
+    severity: high
+    confidence: high
+    references:
+      - "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-3"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(admission|admit|discharge|service|encounter|visit|death|deceased|expired)[\s_-]?date[\s:#=]{1,4}(?:\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4}|\d{4}[/\-\.]\d{1,2}[/\-\.]\d{1,2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+\d{4})'

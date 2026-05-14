@@ -1,0 +1,15 @@
+  - id: dlp-pii-bank-account
+    type: dlp
+    status: stable
+    name: "Bank Account Number (labeled)"
+    description: "Detects labeled bank account numbers (6-17 digits)."
+    severity: high
+    confidence: medium
+    references:
+      - "https://www.consumerfinance.gov/consumer-tools/bank-accounts/"
+    tags:
+      - "category:pii"
+      - "hipaa:identifier-10"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(account[\s_-]?(no|number|#)|acct[\s_-]?(no|#)?)[\s:#=]{1,4}\d{6,17}\b'

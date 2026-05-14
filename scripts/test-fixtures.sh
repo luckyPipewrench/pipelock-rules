@@ -1,76 +1,97 @@
 #!/bin/bash
-# Test all rule regexes against their fixture files.
-# Each rule should have matching fixtures in fixtures/{type}/:
-#   {rule-id}-true-positive.txt  — lines that MUST match
-#   {rule-id}-false-positive.txt — lines that MUST NOT match
-#
-# Uses grep -P (PCRE) for regex matching with case-insensitive flag.
+# Test all rule regexes against their bundle fixture files.
 set -euo pipefail
 
-PASS=0
-FAIL=0
-SKIP=0
+BUNDLE_NAME="${BUNDLE_NAME:-pipelock-community}"
+BUNDLE_FILE="${BUNDLE_FILE:-published/$BUNDLE_NAME/bundle.yaml}"
+FIXTURE_ROOT="fixtures/$BUNDLE_NAME"
+export BUNDLE_FILE FIXTURE_ROOT
 
-# Extract rule ID and regex from compiled bundle
-extract_rules() {
-  local bundle="published/pipelock-community/bundle.yaml"
-  if [ ! -f "$bundle" ]; then
-    echo "ERROR: bundle not compiled. Run 'make compile' first." >&2
-    exit 1
-  fi
-  # Parse rule IDs and regexes (simple grep, not a full YAML parser)
-  grep -A20 '^\s*- id:' "$bundle" | \
-    awk '/^\s*- id:/{id=$3} /^\s*regex:/{gsub(/^\s*regex:\s*/, ""); gsub(/^'\''|'\''$/, ""); print id " " $0}' | \
-    sed "s/''/'/g"  # unescape YAML doubled single quotes
-}
+if [ ! -f "$BUNDLE_FILE" ]; then
+  echo "ERROR: bundle not compiled at $BUNDLE_FILE. Run 'make compile' first." >&2
+  exit 1
+fi
 
-while IFS=' ' read -r rule_id regex; do
-  # Determine rule type from directory
-  type=""
-  for t in dlp injection tool-poison; do
-    if [ -f "fixtures/$t/${rule_id}-true-positive.txt" ]; then
-      type="$t"
-      break
-    fi
-  done
+if [ ! -d "$FIXTURE_ROOT" ]; then
+  echo "ERROR: no fixtures found for bundle '$BUNDLE_NAME' at $FIXTURE_ROOT" >&2
+  exit 1
+fi
 
-  if [ -z "$type" ]; then
-    echo "SKIP: $rule_id (no fixtures)"
-    SKIP=$((SKIP + 1))
-    continue
-  fi
+python3 <<'PY'
+import os
+import pathlib
+import re
+import sys
 
-  tp_file="fixtures/$type/${rule_id}-true-positive.txt"
-  fp_file="fixtures/$type/${rule_id}-false-positive.txt"
+bundle = pathlib.Path(os.environ["BUNDLE_FILE"])
+fixture_root = pathlib.Path(os.environ["FIXTURE_ROOT"])
+text = bundle.read_text()
 
-  # Test true positives (each line must match)
-  if [ -f "$tp_file" ]; then
-    while IFS= read -r line; do
-      [ -z "$line" ] && continue
-      if echo "$line" | grep -qP "(?i)$regex" 2>/dev/null; then
-        PASS=$((PASS + 1))
-      else
-        echo "FAIL: $rule_id true-positive did not match: $line"
-        FAIL=$((FAIL + 1))
-      fi
-    done < "$tp_file"
-  fi
+rules = []
+current_id = None
+for line in text.splitlines():
+    m_id = re.match(r"^\s*- id:\s*(\S+)\s*$", line)
+    if m_id:
+        current_id = m_id.group(1)
+        continue
+    m_rx = re.match(r"^\s*regex:\s*'(.*)'\s*$", line)
+    if m_rx and current_id:
+        pattern = m_rx.group(1).replace("''", "'")
+        rules.append((current_id, pattern))
+        current_id = None
 
-  # Test false positives (each line must NOT match)
-  if [ -f "$fp_file" ]; then
-    while IFS= read -r line; do
-      [ -z "$line" ] && continue
-      if echo "$line" | grep -qP "(?i)$regex" 2>/dev/null; then
-        echo "FAIL: $rule_id false-positive matched: $line"
-        FAIL=$((FAIL + 1))
-      else
-        PASS=$((PASS + 1))
-      fi
-    done < "$fp_file"
-  fi
+passes = 0
+fails = 0
+skipped = 0
 
-done < <(extract_rules)
 
-echo ""
-echo "Results: $PASS passed, $FAIL failed, $SKIP skipped"
-[ "$FAIL" -eq 0 ] || exit 1
+def find_type(rule_id):
+    for rule_type in ("dlp", "injection", "tool-poison"):
+        if (fixture_root / rule_type / f"{rule_id}-true-positive.txt").exists():
+            return rule_type
+        if (fixture_root / rule_type / f"{rule_id}-false-positive.txt").exists():
+            return rule_type
+    return None
+
+
+for rule_id, pattern in rules:
+    rule_type = find_type(rule_id)
+    if rule_type is None:
+        print(f"SKIP: {rule_id} (no fixtures)")
+        skipped += 1
+        continue
+
+    try:
+        compiled = re.compile(pattern, re.IGNORECASE | re.MULTILINE)
+    except re.error as exc:
+        print(f"FAIL: {rule_id} bad regex: {exc}")
+        fails += 1
+        continue
+
+    tp_file = fixture_root / rule_type / f"{rule_id}-true-positive.txt"
+    fp_file = fixture_root / rule_type / f"{rule_id}-false-positive.txt"
+
+    if tp_file.exists():
+        for line in tp_file.read_text().splitlines():
+            if not line.strip():
+                continue
+            if compiled.search(line):
+                passes += 1
+            else:
+                print(f"FAIL: {rule_id} true-positive did not match: {line}")
+                fails += 1
+
+    if fp_file.exists():
+        for line in fp_file.read_text().splitlines():
+            if not line.strip():
+                continue
+            if compiled.search(line):
+                print(f"FAIL: {rule_id} false-positive matched: {line}")
+                fails += 1
+            else:
+                passes += 1
+
+print()
+print(f"Results: {passes} passed, {fails} failed, {skipped} skipped")
+sys.exit(0 if fails == 0 else 1)
+PY

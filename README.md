@@ -60,6 +60,14 @@ This repo contains **pipelock-community**, the official community bundle. It shi
 pipelock rules install pipelock-community
 ```
 
+## Healthcare PHI/PII Bundle
+
+This repo also contains **healthcare-phi-pii**, a healthcare-focused DLP bundle contributed by BGASoft, Inc. It ships 28 PHI/PII detection rules covering regex-detectable entries from HIPAA Safe Harbor's 18 identifiers, financial PII, and clinical laboratory identifiers.
+
+```bash
+pipelock rules install healthcare-phi-pii
+```
+
 Enable experimental rules in your config:
 
 ```yaml
@@ -87,6 +95,9 @@ See the [full bundle authoring guide](https://github.com/luckyPipewrench/pipeloc
 # Compile individual rule files into a single bundle
 make compile
 
+# Compile a specific bundle
+BUNDLE_NAME=healthcare-phi-pii make compile
+
 # Validate the bundle with pipelock
 make validate
 
@@ -98,17 +109,25 @@ make test-fixtures
 
 ```
 rules/
-  dlp/              One YAML file per DLP pattern
-  injection/        One YAML file per injection pattern
-  tool-poison/      One YAML file per tool-poison pattern
+  pipelock-community/
+    dlp/            One YAML file per DLP pattern
+    injection/      One YAML file per injection pattern
+    tool-poison/    One YAML file per tool-poison pattern
+  healthcare-phi-pii/
+    dlp/
 fixtures/
-  dlp/              True/false positive test strings
-  injection/
-  tool-poison/
+  pipelock-community/
+    dlp/            True/false positive test strings
+    injection/
+    tool-poison/
+  healthcare-phi-pii/
+    dlp/
 published/
   pipelock-community/
     bundle.yaml     Compiled bundle (all rules merged)
     bundle.yaml.sig Ed25519 signature
+  healthcare-phi-pii/
+    bundle.yaml
 scripts/
   compile.sh        Merges rule files into bundle.yaml
   test-fixtures.sh  Validates every regex against fixtures

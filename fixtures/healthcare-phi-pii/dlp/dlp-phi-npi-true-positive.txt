@@ -1,0 +1,5 @@
+NPI: 1234567893
+npi=2987654321
+National Provider ID: 1023456789
+NPI#1245319599
+national_provider_identifier: 2987654320

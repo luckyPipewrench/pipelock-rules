@@ -1,0 +1,451 @@
+format_version: 1
+name: healthcare-phi-pii
+version: "2026.05.1"
+author: BGASoft, Inc.
+description: "PHI/PII detection rules for healthcare AI agents covering regex-detectable entries from HIPAA Safe Harbor's 18 identifiers, financial PII, and clinical-lab identifiers"
+homepage: "https://github.com/luckyPipewrench/pipelock-rules"
+min_pipelock: "1.4.0"
+license: "Apache-2.0"
+
+rules:
+  - id: dlp-pii-aba-routing
+    type: dlp
+    status: stable
+    name: "US ABA Routing Number (labeled)"
+    description: "Detects labeled 9-digit US bank routing (ABA RTN) numbers."
+    severity: high
+    confidence: medium
+    references:
+      - "https://www.frbservices.org/EPaymentsDirectory/about.html"
+    tags:
+      - "category:pii"
+      - "hipaa:identifier-10"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(routing|aba|rtn)[\s:#=]{1,4}\d{9}\b'
+
+  - id: dlp-phi-admit-discharge-date
+    type: dlp
+    status: stable
+    name: "Admission/Discharge/Service/Death Date (labeled)"
+    description: "Detects labeled dates of admission, discharge, service, encounter, visit, or death — HIPAA Safe Harbor restricts all dates more specific than year for an individual."
+    severity: high
+    confidence: high
+    references:
+      - "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-3"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(admission|admit|discharge|service|encounter|visit|death|deceased|expired)[\s_-]?date[\s:#=]{1,4}(?:\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4}|\d{4}[/\-\.]\d{1,2}[/\-\.]\d{1,2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+\d{4})'
+
+  - id: dlp-phi-age-90-plus
+    type: dlp
+    status: stable
+    name: "Age 90 or Above (labeled)"
+    description: "Detects labeled ages of 90 and above — HIPAA Safe Harbor requires ages over 89 be aggregated as 90+."
+    severity: medium
+    confidence: high
+    references:
+      - "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html#standard"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-3"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(age|aged|years[\s_-]?old)[\s:#=]{1,4}(?:9[0-9]|1[0-9]{2})\b'
+
+  - id: dlp-pii-bank-account
+    type: dlp
+    status: stable
+    name: "Bank Account Number (labeled)"
+    description: "Detects labeled bank account numbers (6-17 digits)."
+    severity: high
+    confidence: medium
+    references:
+      - "https://www.consumerfinance.gov/consumer-tools/bank-accounts/"
+    tags:
+      - "category:pii"
+      - "hipaa:identifier-10"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(account[\s_-]?(no|number|#)|acct[\s_-]?(no|#)?)[\s:#=]{1,4}\d{6,17}\b'
+
+  - id: dlp-phi-cpt
+    type: dlp
+    status: stable
+    name: "CPT/HCPCS Procedure Code (labeled)"
+    description: "Detects labeled CPT or HCPCS procedure codes (5-digit format)."
+    severity: medium
+    confidence: high
+    references:
+      - "https://www.ama-assn.org/practice-management/cpt"
+    tags:
+      - "category:phi"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(cpt|hcpcs|procedure[\s_-]?code)[\s:#=]{1,4}\d{5}\b'
+
+  - id: dlp-phi-dea-number
+    type: dlp
+    status: stable
+    name: "DEA Registration Number"
+    description: "Detects US DEA registration numbers (controlled-substance prescriber ID)."
+    severity: critical
+    confidence: medium
+    references:
+      - "https://www.deadiversion.usdoj.gov/drugreg/practioners/index.html"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-11"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '\b[ABFMPRSX][A-Z9]\d{7}\b'
+
+  - id: dlp-phi-dob
+    type: dlp
+    status: stable
+    name: "Date of Birth (labeled)"
+    description: "Detects labeled date-of-birth values in common US/ISO formats and month-name forms."
+    severity: high
+    confidence: high
+    references:
+      - "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-3"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(dob|d\.o\.b\.|date[\s_-]?of[\s_-]?birth|birth[\s_-]?date)[\s:#=]{1,4}(?:\d{1,2}[/\-\.]\d{1,2}[/\-\.]\d{2,4}|\d{4}[/\-\.]\d{1,2}[/\-\.]\d{1,2}|(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+\d{4})'
+
+  - id: dlp-pii-ein
+    type: dlp
+    status: stable
+    name: "IRS Employer Identification Number (labeled)"
+    description: "Detects labeled EIN in NN-NNNNNNN format."
+    severity: high
+    confidence: high
+    references:
+      - "https://www.irs.gov/businesses/small-businesses-self-employed/employer-id-numbers"
+    tags:
+      - "category:pii"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(ein|employer[\s_-]?(id|identification|tax[\s_-]?id))[\s:#=]{1,4}\d{2}-\d{7}\b'
+
+  - id: dlp-phi-fhir-patient
+    type: dlp
+    status: stable
+    name: "FHIR Patient Resource"
+    description: "Detects FHIR Patient resourceType payloads or /Patient/{id} URL paths."
+    severity: high
+    confidence: high
+    references:
+      - "https://www.hl7.org/fhir/patient.html"
+    tags:
+      - "category:phi"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)"resourceType"\s*:\s*"Patient"|/Patient/[A-Za-z0-9\-\.]{1,64}'
+
+  - id: dlp-phi-hl7-pid
+    type: dlp
+    status: stable
+    name: "HL7 v2 PID Segment"
+    description: "Detects HL7 v2.x Patient Identification (PID) segments at start of line."
+    severity: critical
+    confidence: high
+    references:
+      - "https://www.hl7.org/implement/standards/product_brief.cfm?product_id=185"
+    tags:
+      - "category:phi"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?m)^PID\|'
+
+  - id: dlp-phi-icd-10
+    type: dlp
+    status: stable
+    name: "ICD-10 Diagnosis Code (labeled)"
+    description: "Detects labeled ICD-10-CM diagnosis codes (letter + 2 digits/chars + optional decimal extension)."
+    severity: medium
+    confidence: high
+    references:
+      - "https://www.cdc.gov/nchs/icd/icd-10-cm.htm"
+    tags:
+      - "category:phi"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(icd[\s_-]?10|diagnosis[\s_-]?code|dx)[\s:#=]{1,4}[A-TV-Z][0-9][0-9AB](?:\.[0-9A-TV-Z]{1,4})?\b'
+
+  - id: dlp-phi-ipv4-labeled
+    type: dlp
+    status: stable
+    name: "Patient/User IPv4 Address (labeled)"
+    description: "Detects labeled IPv4 addresses tied to a patient/user/session/client context (HIPAA identifier 15)."
+    severity: medium
+    confidence: high
+    references:
+      - "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-15"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(patient|user|session|client)[\s_-]?(ip|address)[\s:#=]{1,4}(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\b'
+
+  - id: dlp-pii-itin
+    type: dlp
+    status: stable
+    name: "IRS Individual Taxpayer Identification Number"
+    description: "Detects US ITIN: starts with 9, group 70-88 or 90-99 (excluding 89,92,93)."
+    severity: critical
+    confidence: high
+    references:
+      - "https://www.irs.gov/individuals/individual-taxpayer-identification-number"
+    tags:
+      - "category:pii"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '\b9\d{2}-(?:7[0-9]|8[0-8]|9[0-24-9])-\d{4}\b'
+
+  - id: dlp-phi-lab-accession
+    type: dlp
+    status: stable
+    name: "Lab Accession Number (labeled)"
+    description: "Detects labeled clinical laboratory accession numbers — identifier tied to a patient specimen."
+    severity: high
+    confidence: medium
+    references:
+      - "https://www.cap.org/laboratory-improvement/accreditation/laboratory-accreditation-program"
+    tags:
+      - "category:phi"
+      - "domain:laboratory"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(accession|acc[\s_-]?(no|num|number|#)|lab[\s_-]?(no|number|#))[\s:#=]{1,4}[A-Z]{0,4}\d{4,14}[A-Z]?\b'
+
+  - id: dlp-phi-mbi
+    type: dlp
+    status: stable
+    name: "Medicare Beneficiary Identifier"
+    description: "Detects Medicare MBI — 11-char identifier with strict position rules (no S, L, O, I, B, Z)."
+    severity: critical
+    confidence: high
+    references:
+      - "https://www.cms.gov/medicare/new-medicare-card/understanding-the-mbi-with-format.pdf"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-9"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '\b[1-9][ACDEFGHJKMNPQRTUVWXY][A-Z0-9]\d[ACDEFGHJKMNPQRTUVWXY][A-Z0-9]\d[ACDEFGHJKMNPQRTUVWXY][ACDEFGHJKMNPQRTUVWXY]\d{2}\b'
+
+  - id: dlp-phi-member-id
+    type: dlp
+    status: stable
+    name: "Health Plan Member/Subscriber/Policy ID (labeled)"
+    description: "Detects labeled health-plan beneficiary identifiers (member, policy, subscriber, group)."
+    severity: high
+    confidence: high
+    references:
+      - "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-9"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(member[\s_-]?id|policy[\s_-]?(no|number|#)?|subscriber[\s_-]?id|group[\s_-]?(no|number|#)?)[\s:#=]{1,4}[A-Z]{0,3}\d{4,16}[A-Z]?\b'
+
+  - id: dlp-phi-mrn
+    type: dlp
+    status: stable
+    name: "Medical Record Number (labeled)"
+    description: "Detects labeled MRN: optional 3-letter prefix + 4-12 digits + optional 1-letter suffix."
+    severity: critical
+    confidence: high
+    references:
+      - "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-8"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(mrn|medical[\s_-]?record[\s_-]?(no|number|#)?)[\s:#=-]{1,4}[A-Z]{0,3}\d{4,12}[A-Z]?\b'
+
+  - id: dlp-phi-ndc
+    type: dlp
+    status: stable
+    name: "National Drug Code (labeled)"
+    description: "Detects labeled NDC drug identifiers (4-5-3-4 / 5-3-2 / 5-4-1 etc. variants)."
+    severity: medium
+    confidence: high
+    references:
+      - "https://www.fda.gov/drugs/drug-approvals-and-databases/national-drug-code-directory"
+    tags:
+      - "category:phi"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(ndc|drug[\s_-]?code)[\s:#=]{1,4}\d{4,5}-\d{3,4}-\d{1,2}\b'
+
+  - id: dlp-phi-npi
+    type: dlp
+    status: stable
+    name: "National Provider Identifier (labeled)"
+    description: "Detects labeled NPI: 10-digit identifier starting with 1 or 2."
+    severity: high
+    confidence: high
+    references:
+      - "https://www.cms.gov/Regulations-and-Guidance/Administrative-Simplification/NationalProvIdentStand"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-11"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(npi|national[\s_-]?provider[\s_-]?(id|identifier)?)[\s:#=]{1,4}[12]\d{9}\b'
+
+  - id: dlp-phi-patient-email
+    type: dlp
+    status: stable
+    name: "Patient/Subject Email Address (labeled)"
+    description: "Detects email addresses prefixed by a patient/member/subject/subscriber label."
+    severity: critical
+    confidence: high
+    references:
+      - "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-6"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(patient|member|subject|subscriber)[\s_-]?(email|e-?mail)[\s:#=]{1,4}[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,24}\b'
+
+  - id: dlp-phi-phone-us
+    type: dlp
+    status: stable
+    name: "US Phone Number"
+    description: "Detects real-shape US NPA-NXX-XXXX phone numbers, structurally excluding the reserved 555-test ranges."
+    severity: medium
+    confidence: medium
+    references:
+      - "https://www.nationalnanpa.com/"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-4"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '\b(?:\+?1[\s\-\.]?)?\(?(?:[2-46-9]\d{2}|5[0-46-9]\d|55[0-46-9])\)?[\s\-\.](?:[2-46-9]\d{2}|5[0-46-9]\d|55[0-46-9])[\s\-\.]\d{4}\b'
+
+  - id: dlp-phi-specimen-id
+    type: dlp
+    status: stable
+    name: "Specimen/Sample ID (labeled)"
+    description: "Detects labeled specimen/sample/aliquot identifiers — clinical-laboratory identifier indirectly tied to a patient."
+    severity: high
+    confidence: medium
+    references:
+      - "https://www.cap.org/laboratory-improvement/accreditation/laboratory-accreditation-program"
+    tags:
+      - "category:phi"
+      - "domain:laboratory"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(specimen|sample|aliquot|tube|barcode)[\s_-]?(id|no|num|number|#)[\s:#=]{1,4}[A-Z]{0,4}\d{4,14}[A-Z]?\b'
+
+  - id: dlp-phi-ssn-labeled
+    type: dlp
+    status: stable
+    name: "US Social Security Number (labeled)"
+    description: "Detects labeled US SSN preceded by an SSN/social-security marker."
+    severity: critical
+    confidence: high
+    references:
+      - "https://www.ssa.gov/employer/randomization.html"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-7"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(ssn|social[\s_-]?security[\s_-]?(no|number|#)?)[\s:#=]{1,4}(?:00[1-9]|0[1-9]\d|[1-578]\d{2}|6[0-57-9]\d|66[0-57-9])[\s\-]?(?:0[1-9]|[1-9]\d)[\s\-]?(?:000[1-9]|00[1-9]\d|0[1-9]\d{2}|[1-9]\d{3})\b'
+
+  - id: dlp-phi-ssn-strict
+    type: dlp
+    status: stable
+    name: "US Social Security Number (strict format)"
+    description: "Detects US SSN in AAA-GG-SSSS format. Area 001-665, 667-899 (excludes 000, 666, 9XX); group 01-99; serial 0001-9999."
+    severity: critical
+    confidence: high
+    references:
+      - "https://www.ssa.gov/employer/randomization.html"
+      - "https://en.wikipedia.org/wiki/Social_Security_number"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-7"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '\b(?:00[1-9]|0[1-9]\d|[1-578]\d{2}|6[0-57-9]\d|66[0-57-9])[\s\-](?:0[1-9]|[1-9]\d)[\s\-](?:000[1-9]|00[1-9]\d|0[1-9]\d{2}|[1-9]\d{3})\b'
+
+  - id: dlp-pii-us-drivers-license
+    type: dlp
+    status: stable
+    name: "US Driver's License (labeled)"
+    description: "Detects labeled US driver's license numbers (mixed alphanumeric, varied state formats)."
+    severity: high
+    confidence: medium
+    references:
+      - "https://www.aamva.org/topics/driver-licensing"
+    tags:
+      - "category:pii"
+      - "hipaa:identifier-11"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(driver[\s_-]?(s|''s)?[\s_-]?(license|lic)|\bdl|\bdln)[\s:#=]{1,4}[A-Z]{0,3}\d{4,14}[A-Z]?\b'
+
+  - id: dlp-pii-us-passport
+    type: dlp
+    status: stable
+    name: "US Passport Number (labeled)"
+    description: "Detects labeled US passport numbers (6-9 digits, optional leading letters)."
+    severity: critical
+    confidence: high
+    references:
+      - "https://travel.state.gov/content/travel/en/passports.html"
+    tags:
+      - "category:pii"
+      - "hipaa:identifier-11"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(passport|passport[\s_-]?(no|number|#)?)[\s:#=]{1,4}[A-Z]{0,2}\d{6,9}\b'
+
+  - id: dlp-pii-vehicle-vin
+    type: dlp
+    status: experimental
+    name: "Vehicle VIN"
+    description: "Detects 17-character VINs (excludes I, O, Q per ISO 3779). Experimental due to potential overlap with random alphanumeric strings of the same length."
+    severity: low
+    confidence: medium
+    references:
+      - "https://www.iso.org/standard/52200.html"
+    tags:
+      - "category:pii"
+      - "hipaa:identifier-12"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '\b[A-HJ-NPR-Z0-9]{17}\b'
+
+  - id: dlp-phi-zip-plus-4
+    type: dlp
+    status: experimental
+    name: "ZIP+4 Postal Code"
+    description: "Detects ZIP+4 postal codes — HIPAA Safe Harbor restricts geographic subdivisions smaller than state. Experimental because 5+4 digit sequences may appear in unrelated structured data."
+    severity: low
+    confidence: low
+    references:
+      - "https://faq.usps.com/s/article/ZIP-Code-The-Basics"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-2"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '\b\d{5}-\d{4}\b'
