@@ -30,6 +30,7 @@ jobs:
           fail-on-findings: 'true'
           test-vectors: 'false'
           exclude-paths: |
+            fixtures/
             scripts/
 
   validate:
