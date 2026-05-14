@@ -1,0 +1,15 @@
+  - id: dlp-pii-us-passport
+    type: dlp
+    status: stable
+    name: "US Passport Number (labeled)"
+    description: "Detects labeled US passport numbers (6-9 digits, optional leading letters)."
+    severity: critical
+    confidence: high
+    references:
+      - "https://travel.state.gov/content/travel/en/passports.html"
+    tags:
+      - "category:pii"
+      - "hipaa:identifier-11"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(passport|passport[\s_-]?(no|number|#)?)[\s:#=]{1,4}[A-Z]{0,2}\d{6,9}\b'

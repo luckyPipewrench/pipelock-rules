@@ -1,0 +1,14 @@
+  - id: dlp-phi-icd-10
+    type: dlp
+    status: stable
+    name: "ICD-10 Diagnosis Code (labeled)"
+    description: "Detects labeled ICD-10-CM diagnosis codes (letter + 2 digits/chars + optional decimal extension)."
+    severity: medium
+    confidence: high
+    references:
+      - "https://www.cdc.gov/nchs/icd/icd-10-cm.htm"
+    tags:
+      - "category:phi"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(icd[\s_-]?10|diagnosis[\s_-]?code|dx)[\s:#=]{1,4}[A-TV-Z][0-9][0-9AB](?:\.[0-9A-TV-Z]{1,4})?\b'

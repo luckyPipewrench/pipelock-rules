@@ -8,31 +8,44 @@ Rules are welcome via pull request. Each rule must meet the quality bar below be
 - Bash (for `make compile` and `make test-fixtures`)
 - A regex that works with Go's RE2 engine (no lookahead/lookbehind, no backreferences)
 
-## Adding a New Rule
+## Contributing Rules to an Existing Bundle
 
 1. Create a YAML file in the appropriate directory:
-   - `rules/dlp/` for credential/secret detection
-   - `rules/injection/` for prompt injection detection
-   - `rules/tool-poison/` for MCP tool description poisoning
+   - `rules/<bundle-name>/dlp/` for credential, secret, PHI, or PII detection
+   - `rules/<bundle-name>/injection/` for prompt injection detection
+   - `rules/<bundle-name>/tool-poison/` for MCP tool description poisoning
 
 2. Follow the naming convention:
    - DLP: `{provider}.yaml` or `{provider}-{credential-type}.yaml`
    - Injection: `{technique}.yaml`
    - Tool-poison: `{behavior}.yaml`
 
-3. Add fixture files in `fixtures/{type}/`:
+3. Add fixture files in `fixtures/<bundle-name>/{type}/`:
    - `{rule-id}-true-positive.txt`: one test string per line that MUST match
    - `{rule-id}-false-positive.txt`: one test string per line that MUST NOT match
    - Every non-empty line is tested (no comment syntax)
 
 4. Run validation:
    ```bash
-   make compile
-   make test-fixtures
-   make validate
+   BUNDLE_NAME=<bundle-name> make compile
+   BUNDLE_NAME=<bundle-name> make test-fixtures
+   BUNDLE_NAME=<bundle-name> make validate
    ```
 
 5. Submit a PR.
+
+`pipelock-community` is the default bundle, so existing commands such as `make compile` still target it.
+
+## Contributing a New Bundle
+
+Open an issue first so naming, scope, signing-key alignment, and maintenance ownership can be confirmed before code is added. New bundles should use this layout:
+
+```text
+rules/<bundle-name>/<type>/<rule-file>.yaml
+fixtures/<bundle-name>/<type>/<rule-id>-true-positive.txt
+fixtures/<bundle-name>/<type>/<rule-id>-false-positive.txt
+published/<bundle-name>/bundle.yaml
+```
 
 ## Rule YAML Format
 
@@ -96,7 +109,7 @@ Rules are welcome via pull request. Each rule must meet the quality bar below be
 
 1. Fork the repo and create a branch (`feat/new-rule-name` or `fix/rule-id`)
 2. Add your rule and fixtures
-3. Run `make compile && make test-fixtures && make validate`
+3. Run `BUNDLE_NAME=<bundle-name> make compile && BUNDLE_NAME=<bundle-name> make test-fixtures && BUNDLE_NAME=<bundle-name> make validate`
 4. Push and open a PR
 
 ## Contributor License Agreement

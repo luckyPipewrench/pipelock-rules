@@ -1,0 +1,5 @@
+accession: TEST
+acc_number: SAMPLE
+12345678 alone
+the accession was processed
+lab no: ABC

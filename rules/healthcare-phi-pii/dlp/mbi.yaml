@@ -1,0 +1,15 @@
+  - id: dlp-phi-mbi
+    type: dlp
+    status: stable
+    name: "Medicare Beneficiary Identifier"
+    description: "Detects Medicare MBI — 11-char identifier with strict position rules (no S, L, O, I, B, Z)."
+    severity: critical
+    confidence: high
+    references:
+      - "https://www.cms.gov/medicare/new-medicare-card/understanding-the-mbi-with-format.pdf"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-9"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '\b[1-9][ACDEFGHJKMNPQRTUVWXY][A-Z0-9]\d[ACDEFGHJKMNPQRTUVWXY][A-Z0-9]\d[ACDEFGHJKMNPQRTUVWXY][ACDEFGHJKMNPQRTUVWXY]\d{2}\b'

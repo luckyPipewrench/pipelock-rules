@@ -1,0 +1,15 @@
+  - id: dlp-phi-npi
+    type: dlp
+    status: stable
+    name: "National Provider Identifier (labeled)"
+    description: "Detects labeled NPI: 10-digit identifier starting with 1 or 2."
+    severity: high
+    confidence: high
+    references:
+      - "https://www.cms.gov/Regulations-and-Guidance/Administrative-Simplification/NationalProvIdentStand"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-11"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(npi|national[\s_-]?provider[\s_-]?(id|identifier)?)[\s:#=]{1,4}[12]\d{9}\b'

@@ -14,10 +14,12 @@ Community detection rule bundles for [Pipelock](https://github.com/luckyPipewren
 ## Build, Test, Validate
 
 ```bash
-make compile         # Merge rule files into published/pipelock-community/bundle.yaml
+make compile         # Merge default bundle files into published/pipelock-community/bundle.yaml
 make validate        # Compile + install into pipelock (validates schema and regexes)
 make test-fixtures   # Run every regex against its true/false positive fixtures
 ```
+
+Set `BUNDLE_NAME=<bundle-name>` to work on a non-default bundle, for example `BUNDLE_NAME=healthcare-phi-pii make test-fixtures`.
 
 `make validate` requires `pipelock` on PATH. Install with `go install github.com/luckyPipewrench/pipelock/cmd/pipelock@latest`.
 
@@ -25,17 +27,25 @@ make test-fixtures   # Run every regex against its true/false positive fixtures
 
 ```
 rules/
-  dlp/              One YAML file per DLP pattern
-  injection/        One YAML file per injection pattern
-  tool-poison/      One YAML file per tool-poison pattern
+  pipelock-community/
+    dlp/            One YAML file per DLP pattern
+    injection/      One YAML file per injection pattern
+    tool-poison/    One YAML file per tool-poison pattern
+  healthcare-phi-pii/
+    dlp/
 fixtures/
-  dlp/              True/false positive test strings per rule
-  injection/
-  tool-poison/
+  pipelock-community/
+    dlp/            True/false positive test strings per rule
+    injection/
+    tool-poison/
+  healthcare-phi-pii/
+    dlp/
 published/
   pipelock-community/
     bundle.yaml     Compiled bundle (all rules merged)
     bundle.yaml.sig Ed25519 signature (production-signed)
+  healthcare-phi-pii/
+    bundle.yaml
 scripts/
   compile.sh        Merges rule files into bundle.yaml
   test-fixtures.sh  Validates every regex against fixtures
@@ -43,10 +53,10 @@ scripts/
 
 ## Adding a Rule
 
-1. Create `rules/{type}/{name}.yaml` following the schema in CONTRIBUTING.md
-2. Add `fixtures/{type}/{rule-id}-true-positive.txt` (one match per line)
-3. Add `fixtures/{type}/{rule-id}-false-positive.txt` (stable rules only)
-4. Run `make compile && make test-fixtures`
+1. Create `rules/{bundle}/{type}/{name}.yaml` following the schema in CONTRIBUTING.md
+2. Add `fixtures/{bundle}/{type}/{rule-id}-true-positive.txt` (one match per line)
+3. Add `fixtures/{bundle}/{type}/{rule-id}-false-positive.txt` (stable rules only)
+4. Run `BUNDLE_NAME={bundle} make compile && BUNDLE_NAME={bundle} make test-fixtures`
 5. Submit a PR
 
 ## Rule YAML Schema

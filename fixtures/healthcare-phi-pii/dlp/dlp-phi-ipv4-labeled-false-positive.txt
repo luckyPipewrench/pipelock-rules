@@ -1,0 +1,5 @@
+server_ip: 10.0.0.1
+192.168.1.1 alone
+gateway: 192.168.0.1
+patient address: 123 Main St
+client info on file

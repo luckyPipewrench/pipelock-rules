@@ -1,0 +1,15 @@
+  - id: dlp-phi-specimen-id
+    type: dlp
+    status: stable
+    name: "Specimen/Sample ID (labeled)"
+    description: "Detects labeled specimen/sample/aliquot identifiers — clinical-laboratory identifier indirectly tied to a patient."
+    severity: high
+    confidence: medium
+    references:
+      - "https://www.cap.org/laboratory-improvement/accreditation/laboratory-accreditation-program"
+    tags:
+      - "category:phi"
+      - "domain:laboratory"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(specimen|sample|aliquot|tube|barcode)[\s_-]?(id|no|num|number|#)[\s:#=]{1,4}[A-Z]{0,4}\d{4,14}[A-Z]?\b'

@@ -1,0 +1,15 @@
+  - id: dlp-phi-dea-number
+    type: dlp
+    status: stable
+    name: "DEA Registration Number"
+    description: "Detects US DEA registration numbers (controlled-substance prescriber ID)."
+    severity: critical
+    confidence: medium
+    references:
+      - "https://www.deadiversion.usdoj.gov/drugreg/practioners/index.html"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-11"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '\b[ABFMPRSX][A-Z9]\d{7}\b'

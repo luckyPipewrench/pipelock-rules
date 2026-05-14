@@ -1,0 +1,4 @@
+support@example.com
+admin email: admin@example.com
+contact us at info@example.com
+no-reply@example.org

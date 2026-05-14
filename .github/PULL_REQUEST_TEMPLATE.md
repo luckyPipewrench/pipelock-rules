@@ -8,11 +8,17 @@ Brief description of what this PR adds or changes.
 |---------|------|--------|-------------|
 | | | | |
 
+## Bundle
+
+- [ ] `pipelock-community`
+- [ ] `healthcare-phi-pii`
+- [ ] Other:
+
 ## Testing
 
-- [ ] `make compile` succeeds
-- [ ] `make test-fixtures` passes (all true/false positive fixtures)
-- [ ] `make validate` passes (pipelock accepts the bundle)
+- [ ] `BUNDLE_NAME=<bundle-name> make compile` succeeds
+- [ ] `BUNDLE_NAME=<bundle-name> make test-fixtures` passes (all true/false positive fixtures)
+- [ ] `BUNDLE_NAME=<bundle-name> make validate` passes (pipelock accepts the bundle)
 
 ## Checklist
 

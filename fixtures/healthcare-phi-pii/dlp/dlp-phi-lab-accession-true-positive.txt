@@ -1,0 +1,6 @@
+accession: 12345678
+acc_no: A1234567
+acc_number=LAB123456
+lab_no: 9876543210
+accession ABCD12345678
+lab number: 1234567

@@ -1,0 +1,14 @@
+  - id: dlp-phi-fhir-patient
+    type: dlp
+    status: stable
+    name: "FHIR Patient Resource"
+    description: "Detects FHIR Patient resourceType payloads or /Patient/{id} URL paths."
+    severity: high
+    confidence: high
+    references:
+      - "https://www.hl7.org/fhir/patient.html"
+    tags:
+      - "category:phi"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)(?:"resourceType"\s*:\s*"Patient"|(?:GET|POST|PUT|PATCH|DELETE)\s+/Patient/[A-Za-z0-9\-\.]{1,64}\b)'

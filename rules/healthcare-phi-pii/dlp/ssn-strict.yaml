@@ -1,0 +1,16 @@
+  - id: dlp-phi-ssn-strict
+    type: dlp
+    status: stable
+    name: "US Social Security Number (strict format)"
+    description: "Detects US SSN in AAA-GG-SSSS format. Area 001-665, 667-899 (excludes 000, 666, 9XX); group 01-99; serial 0001-9999."
+    severity: critical
+    confidence: high
+    references:
+      - "https://www.ssa.gov/employer/randomization.html"
+      - "https://en.wikipedia.org/wiki/Social_Security_number"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-7"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '\b(?:00[1-9]|0[1-9]\d|[1-578]\d{2}|6[0-57-9]\d|66[0-57-9])[\s\-](?:0[1-9]|[1-9]\d)[\s\-](?:000[1-9]|00[1-9]\d|0[1-9]\d{2}|[1-9]\d{3})\b'

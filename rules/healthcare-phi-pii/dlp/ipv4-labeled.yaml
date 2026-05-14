@@ -1,0 +1,15 @@
+  - id: dlp-phi-ipv4-labeled
+    type: dlp
+    status: stable
+    name: "Patient/User IPv4 Address (labeled)"
+    description: "Detects labeled IPv4 addresses tied to a patient/user/session/client context (HIPAA identifier 15)."
+    severity: medium
+    confidence: high
+    references:
+      - "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-15"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(patient|user|session|client)[\s_-]?(ip|address)[\s:#=]{1,4}(?:(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\.){3}(?:25[0-5]|2[0-4]\d|1\d\d|[1-9]?\d)\b'

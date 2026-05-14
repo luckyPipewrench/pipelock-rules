@@ -1,0 +1,15 @@
+  - id: dlp-phi-patient-email
+    type: dlp
+    status: stable
+    name: "Patient/Subject Email Address (labeled)"
+    description: "Detects email addresses prefixed by a patient/member/subject/subscriber label."
+    severity: critical
+    confidence: high
+    references:
+      - "https://www.hhs.gov/hipaa/for-professionals/privacy/special-topics/de-identification/index.html"
+    tags:
+      - "category:phi"
+      - "hipaa:identifier-6"
+      - "owasp-llm:LLM06"
+    pattern:
+      regex: '(?i)\b(patient|member|subject|subscriber)[\s_-]?(email|e-?mail)[\s:#=]{1,4}[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,24}\b'

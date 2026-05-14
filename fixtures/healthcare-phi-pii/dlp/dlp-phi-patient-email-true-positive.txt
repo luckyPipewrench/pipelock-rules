@@ -1,0 +1,5 @@
+patient_email: jane@example.com
+patient-email=jdoe@mail.example.org
+member email: subscriber1@example.net
+subject_email: test.user+phi@example.io
+subscriber email = alice.smith@example.co.uk
