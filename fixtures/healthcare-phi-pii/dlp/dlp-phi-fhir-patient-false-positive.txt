@@ -2,3 +2,5 @@
 "resourceType":"Practitioner"
 the patient was discharged
 url: /patients/list
+url: /Patient/abc-123
+/patient/list

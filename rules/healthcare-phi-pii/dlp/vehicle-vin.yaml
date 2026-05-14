@@ -12,4 +12,4 @@
       - "hipaa:identifier-12"
       - "owasp-llm:LLM06"
     pattern:
-      regex: '\b[A-HJ-NPR-Z0-9]{17}\b'
+      regex: '\b[A-HJ-NPR-Z0-9]{8}[0-9X][A-HJ-NPR-Z0-9]{8}\b'

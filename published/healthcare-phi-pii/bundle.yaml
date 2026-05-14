@@ -147,7 +147,7 @@ rules:
       - "category:phi"
       - "owasp-llm:LLM06"
     pattern:
-      regex: '(?i)"resourceType"\s*:\s*"Patient"|/Patient/[A-Za-z0-9\-\.]{1,64}'
+      regex: '(?i)(?:"resourceType"\s*:\s*"Patient"|(?:GET|POST|PUT|PATCH|DELETE)\s+/Patient/[A-Za-z0-9\-\.]{1,64}\b)'
 
   - id: dlp-phi-hl7-pid
     type: dlp
@@ -335,7 +335,7 @@ rules:
       - "hipaa:identifier-4"
       - "owasp-llm:LLM06"
     pattern:
-      regex: '\b(?:\+?1[\s\-\.]?)?\(?(?:[2-46-9]\d{2}|5[0-46-9]\d|55[0-46-9])\)?[\s\-\.](?:[2-46-9]\d{2}|5[0-46-9]\d|55[0-46-9])[\s\-\.]\d{4}\b'
+      regex: '(?:^|[^0-9])(?:\+?1[\s\-\.]?)?(?:\((?:[2-46-9]\d{2}|5[0-46-9]\d|55[0-46-9])\)[\s\-\.]?|(?:[2-46-9]\d{2}|5[0-46-9]\d|55[0-46-9])[\s\-\.])(?:[2-46-9]\d{2}|5[0-46-9]\d|55[0-46-9])[\s\-\.]\d{4}\b'
 
   - id: dlp-phi-specimen-id
     type: dlp
@@ -432,7 +432,7 @@ rules:
       - "hipaa:identifier-12"
       - "owasp-llm:LLM06"
     pattern:
-      regex: '\b[A-HJ-NPR-Z0-9]{17}\b'
+      regex: '\b[A-HJ-NPR-Z0-9]{8}[0-9X][A-HJ-NPR-Z0-9]{8}\b'
 
   - id: dlp-phi-zip-plus-4
     type: dlp

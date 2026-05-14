@@ -61,6 +61,15 @@ jobs:
       - name: Compile and validate bundle
         run: BUNDLE_NAME=${{ matrix.bundle }} make validate
 
+  validate-required:
+    name: Validate bundle
+    needs: [validate]
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Confirm matrix passed
+        run: true
+
   test-fixtures:
     name: Test fixtures (${{ matrix.bundle }})
     needs: [security-scan]
@@ -75,6 +84,15 @@ jobs:
 
       - name: Run fixture tests
         run: BUNDLE_NAME=${{ matrix.bundle }} make test-fixtures
+
+  test-fixtures-required:
+    name: Test fixtures
+    needs: [test-fixtures]
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Confirm matrix passed
+        run: true
 
   yaml-lint:
     name: Lint YAML (${{ matrix.bundle }})
@@ -95,3 +113,12 @@ jobs:
         run: |
           BUNDLE_NAME=${{ matrix.bundle }} make compile
           yamllint -d '{extends: default, rules: {line-length: {max: 300}, document-start: disable, truthy: disable, empty-lines: {max: 1}}}' "published/${{ matrix.bundle }}/bundle.yaml"
+
+  yaml-lint-required:
+    name: Lint YAML
+    needs: [yaml-lint]
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Confirm matrix passed
+        run: true

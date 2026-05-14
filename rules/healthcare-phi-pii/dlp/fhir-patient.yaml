@@ -11,4 +11,4 @@
       - "category:phi"
       - "owasp-llm:LLM06"
     pattern:
-      regex: '(?i)"resourceType"\s*:\s*"Patient"|/Patient/[A-Za-z0-9\-\.]{1,64}'
+      regex: '(?i)(?:"resourceType"\s*:\s*"Patient"|(?:GET|POST|PUT|PATCH|DELETE)\s+/Patient/[A-Za-z0-9\-\.]{1,64}\b)'
