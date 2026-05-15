@@ -44,19 +44,16 @@ jobs:
         bundle: [pipelock-community, healthcare-phi-pii]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Install pipelock
         run: |
           set -euo pipefail
-          PIPELOCK_VERSION=2.4.0
-          RELEASE_URL="https://github.com/luckyPipewrench/pipelock/releases/download/v${PIPELOCK_VERSION}"
-          ARCHIVE="pipelock_${PIPELOCK_VERSION}_linux_amd64.tar.gz"
-          curl -fsSLo "/tmp/${ARCHIVE}" "${RELEASE_URL}/${ARCHIVE}"
-          curl -fsSLo /tmp/pipelock-checksums.txt "${RELEASE_URL}/checksums.txt"
-          ( cd /tmp && grep " ${ARCHIVE}\$" pipelock-checksums.txt | sha256sum -c - )
-          tar xzf "/tmp/${ARCHIVE}" -C /usr/local/bin pipelock
-          rm -f "/tmp/${ARCHIVE}" /tmp/pipelock-checksums.txt
-          pipelock --version
+          PIPELOCK_COMMIT=cef4f47eb99ffe00e20fa7d1423bff1a44742dbe
+          echo "$HOME/go/bin" >> "$GITHUB_PATH"
+          go install "github.com/luckyPipewrench/pipelock/cmd/pipelock@${PIPELOCK_COMMIT}"
+          "$HOME/go/bin/pipelock" --version
 
       - name: Compile and validate bundle
         run: BUNDLE_NAME=${{ matrix.bundle }} make validate
@@ -80,19 +77,16 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
 
       - name: Install pipelock
         run: |
           set -euo pipefail
-          PIPELOCK_VERSION=2.4.0
-          RELEASE_URL="https://github.com/luckyPipewrench/pipelock/releases/download/v${PIPELOCK_VERSION}"
-          ARCHIVE="pipelock_${PIPELOCK_VERSION}_linux_amd64.tar.gz"
-          curl -fsSLo "/tmp/${ARCHIVE}" "${RELEASE_URL}/${ARCHIVE}"
-          curl -fsSLo /tmp/pipelock-checksums.txt "${RELEASE_URL}/checksums.txt"
-          ( cd /tmp && grep " ${ARCHIVE}\$" pipelock-checksums.txt | sha256sum -c - )
-          tar xzf "/tmp/${ARCHIVE}" -C /usr/local/bin pipelock
-          rm -f "/tmp/${ARCHIVE}" /tmp/pipelock-checksums.txt
-          pipelock --version
+          PIPELOCK_COMMIT=cef4f47eb99ffe00e20fa7d1423bff1a44742dbe
+          echo "$HOME/go/bin" >> "$GITHUB_PATH"
+          go install "github.com/luckyPipewrench/pipelock/cmd/pipelock@${PIPELOCK_COMMIT}"
+          "$HOME/go/bin/pipelock" --version
 
       - name: Verify committed bundles are current and signed
         run: scripts/check-published-signatures.sh

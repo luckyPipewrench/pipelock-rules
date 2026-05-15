@@ -1,5 +1,6 @@
-# Signatures — belong on the Hugo site, not the authoring repo
+# Official published bundle signatures are required for merge validation.
 published/**/*.sig
+!published/**/bundle.yaml.sig
 
 # Staging artifacts
 .stage-*
