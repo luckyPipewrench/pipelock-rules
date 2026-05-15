@@ -17,18 +17,21 @@ case "$BUNDLE_NAME" in
     AUTHOR="pipelock"
     DESCRIPTION="Community detection rules for AI agent traffic"
     HOMEPAGE="https://pipelab.org/rules/pipelock-community"
+    MIN_PIPELOCK="1.4.0"
     ;;
   healthcare-phi-pii)
     VERSION="2026.05.1"
     AUTHOR="BGASoft, Inc."
     DESCRIPTION="PHI/PII detection rules for healthcare AI agents covering regex-detectable entries from HIPAA Safe Harbor's 18 identifiers, financial PII, and clinical-lab identifiers"
     HOMEPAGE="https://github.com/luckyPipewrench/pipelock-rules"
+    MIN_PIPELOCK="1.5.0"
     ;;
   *)
     VERSION="${BUNDLE_VERSION:-0.1.0}"
     AUTHOR="${BUNDLE_AUTHOR:-community}"
     DESCRIPTION="${BUNDLE_DESCRIPTION:-Community detection rules for Pipelock}"
     HOMEPAGE="${BUNDLE_HOMEPAGE:-https://github.com/luckyPipewrench/pipelock-rules}"
+    MIN_PIPELOCK="${BUNDLE_MIN_PIPELOCK:-1.4.0}"
     ;;
 esac
 
@@ -39,7 +42,7 @@ version: "$VERSION"
 author: $AUTHOR
 description: "$DESCRIPTION"
 homepage: "$HOMEPAGE"
-min_pipelock: "1.4.0"
+min_pipelock: "$MIN_PIPELOCK"
 license: "Apache-2.0"
 
 rules:

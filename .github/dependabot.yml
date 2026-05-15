@@ -12,3 +12,15 @@ updates:
       ci-actions:
         patterns:
           - "*"
+  - package-ecosystem: pip
+    directory: /.github
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: "ci"
+    labels:
+      - ci
+    groups:
+      python-deps:
+        patterns:
+          - "*"
