@@ -19,6 +19,7 @@ Brief description of what this PR adds or changes.
 - [ ] `BUNDLE_NAME=<bundle-name> make compile` succeeds
 - [ ] `BUNDLE_NAME=<bundle-name> make test-fixtures` passes (all true/false positive fixtures)
 - [ ] `BUNDLE_NAME=<bundle-name> make validate` passes (pipelock accepts the bundle)
+- [ ] Maintainer signing completed if this changes `published/<bundle>/bundle.yaml`
 
 ## Checklist
 
