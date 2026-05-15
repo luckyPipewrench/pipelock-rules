@@ -9,6 +9,14 @@ if [[ ! -r "$OFFICIAL_PUBKEY" ]]; then
 	printf 'ERROR: official public key is missing or unreadable: %s\n' "$OFFICIAL_PUBKEY" >&2
 	exit 1
 fi
+EXPECTED_OFFICIAL_PUBKEY_SHA256="${EXPECTED_OFFICIAL_PUBKEY_SHA256:-}"
+if [[ -n "$EXPECTED_OFFICIAL_PUBKEY_SHA256" ]]; then
+	read -r actual_pubkey_sha256 _ < <(sha256sum "$OFFICIAL_PUBKEY")
+	if [[ "$actual_pubkey_sha256" != "$EXPECTED_OFFICIAL_PUBKEY_SHA256" ]]; then
+		printf 'ERROR: official public key digest mismatch for %s\n' "$OFFICIAL_PUBKEY" >&2
+		exit 1
+	fi
+fi
 
 KEYSTORE_DIR="$(mktemp -d)"
 trap 'rm -rf "$KEYSTORE_DIR"' EXIT
