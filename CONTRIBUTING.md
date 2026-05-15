@@ -103,6 +103,9 @@ published/<bundle-name>/bundle.yaml
 
 - PRs are squash-merged into `main`
 - CI must pass: bundle validation, fixture tests, YAML lint
+- Official published bundles must be current and signed before merge. Contributors
+  do not need signing-key access; maintainers add or refresh `bundle.yaml.sig`
+  during review when a PR changes `published/<bundle>/bundle.yaml`.
 - All review threads must be resolved before merge
 
 ## Development Workflow

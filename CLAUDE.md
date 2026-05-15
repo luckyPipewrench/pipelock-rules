@@ -97,7 +97,7 @@ One test string per line. Every non-empty line is tested (no comment syntax).
 
 ## Signing
 
-The published bundle is signed with the pipelock production key. Only maintainers with keystore access can sign. CI validates the unsigned bundle; signing happens at release time.
+Published official bundles are signed with the Pipelock official rules key. Only maintainers with keystore access can sign. CI verifies that committed `published/<bundle>/bundle.yaml` files are current with `rules/<bundle>/` and that each `bundle.yaml.sig` verifies against `.github/rules-official/pipelock-official.pub`.
 
 ## Style
 

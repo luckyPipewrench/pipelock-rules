@@ -63,12 +63,39 @@ jobs:
 
   validate-required:
     name: Validate bundle
-    needs: [validate]
+    needs: [validate, published-signatures]
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 1
     steps:
       - name: Confirm matrix passed
-        run: true
+        run: |
+          test "${{ needs.validate.result }}" = "success"
+          test "${{ needs.published-signatures.result }}" = "success"
+
+  published-signatures:
+    name: Verify published signatures
+    needs: [security-scan]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install pipelock
+        run: |
+          set -euo pipefail
+          PIPELOCK_VERSION=2.4.0
+          RELEASE_URL="https://github.com/luckyPipewrench/pipelock/releases/download/v${PIPELOCK_VERSION}"
+          ARCHIVE="pipelock_${PIPELOCK_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLo "/tmp/${ARCHIVE}" "${RELEASE_URL}/${ARCHIVE}"
+          curl -fsSLo /tmp/pipelock-checksums.txt "${RELEASE_URL}/checksums.txt"
+          ( cd /tmp && grep " ${ARCHIVE}\$" pipelock-checksums.txt | sha256sum -c - )
+          tar xzf "/tmp/${ARCHIVE}" -C /usr/local/bin pipelock
+          rm -f "/tmp/${ARCHIVE}" /tmp/pipelock-checksums.txt
+          pipelock --version
+
+      - name: Verify committed bundles are current and signed
+        run: scripts/check-published-signatures.sh
 
   test-fixtures:
     name: Test fixtures (${{ matrix.bundle }})
@@ -88,11 +115,12 @@ jobs:
   test-fixtures-required:
     name: Test fixtures
     needs: [test-fixtures]
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 1
     steps:
       - name: Confirm matrix passed
-        run: true
+        run: test "${{ needs.test-fixtures.result }}" = "success"
 
   yaml-lint:
     name: Lint YAML (${{ matrix.bundle }})
@@ -117,8 +145,9 @@ jobs:
   yaml-lint-required:
     name: Lint YAML
     needs: [yaml-lint]
+    if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 1
     steps:
       - name: Confirm matrix passed
-        run: true
+        run: test "${{ needs.yaml-lint.result }}" = "success"
