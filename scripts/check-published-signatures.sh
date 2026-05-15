@@ -10,12 +10,14 @@ if [[ ! -r "$OFFICIAL_PUBKEY" ]]; then
 	exit 1
 fi
 EXPECTED_OFFICIAL_PUBKEY_SHA256="${EXPECTED_OFFICIAL_PUBKEY_SHA256:-}"
-if [[ -n "$EXPECTED_OFFICIAL_PUBKEY_SHA256" ]]; then
-	read -r actual_pubkey_sha256 _ < <(sha256sum "$OFFICIAL_PUBKEY")
-	if [[ "$actual_pubkey_sha256" != "$EXPECTED_OFFICIAL_PUBKEY_SHA256" ]]; then
-		printf 'ERROR: official public key digest mismatch for %s\n' "$OFFICIAL_PUBKEY" >&2
-		exit 1
-	fi
+if [[ -z "$EXPECTED_OFFICIAL_PUBKEY_SHA256" ]]; then
+	printf 'ERROR: EXPECTED_OFFICIAL_PUBKEY_SHA256 is required\n' >&2
+	exit 1
+fi
+read -r actual_pubkey_sha256 _ < <(sha256sum "$OFFICIAL_PUBKEY")
+if [[ "$actual_pubkey_sha256" != "$EXPECTED_OFFICIAL_PUBKEY_SHA256" ]]; then
+	printf 'ERROR: official public key digest mismatch for %s\n' "$OFFICIAL_PUBKEY" >&2
+	exit 1
 fi
 
 KEYSTORE_DIR="$(mktemp -d)"

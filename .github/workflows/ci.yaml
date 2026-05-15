@@ -50,10 +50,15 @@ jobs:
       - name: Install pipelock
         run: |
           set -euo pipefail
-          PIPELOCK_COMMIT=cef4f47eb99ffe00e20fa7d1423bff1a44742dbe
-          echo "$HOME/go/bin" >> "$GITHUB_PATH"
-          go install "github.com/luckyPipewrench/pipelock/cmd/pipelock@${PIPELOCK_COMMIT}"
-          "$HOME/go/bin/pipelock" --version
+          PIPELOCK_VERSION=2.4.0
+          PIPELOCK_SHA256=61a60e02e259541acb054dcdb43e2d9e23c04fc595b82dfebf58a95471c02964
+          RELEASE_URL="https://github.com/luckyPipewrench/pipelock/releases/download/v${PIPELOCK_VERSION}"
+          ARCHIVE="pipelock_${PIPELOCK_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLo "/tmp/${ARCHIVE}" "${RELEASE_URL}/${ARCHIVE}"
+          printf '%s  %s\n' "$PIPELOCK_SHA256" "/tmp/${ARCHIVE}" | sha256sum -c -
+          tar xzf "/tmp/${ARCHIVE}" -C /usr/local/bin pipelock
+          rm -f "/tmp/${ARCHIVE}"
+          pipelock --version
 
       - name: Compile and validate bundle
         run: BUNDLE_NAME=${{ matrix.bundle }} make validate
@@ -85,10 +90,15 @@ jobs:
       - name: Install pipelock
         run: |
           set -euo pipefail
-          PIPELOCK_COMMIT=cef4f47eb99ffe00e20fa7d1423bff1a44742dbe
-          echo "$HOME/go/bin" >> "$GITHUB_PATH"
-          go install "github.com/luckyPipewrench/pipelock/cmd/pipelock@${PIPELOCK_COMMIT}"
-          "$HOME/go/bin/pipelock" --version
+          PIPELOCK_VERSION=2.4.0
+          PIPELOCK_SHA256=61a60e02e259541acb054dcdb43e2d9e23c04fc595b82dfebf58a95471c02964
+          RELEASE_URL="https://github.com/luckyPipewrench/pipelock/releases/download/v${PIPELOCK_VERSION}"
+          ARCHIVE="pipelock_${PIPELOCK_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLo "/tmp/${ARCHIVE}" "${RELEASE_URL}/${ARCHIVE}"
+          printf '%s  %s\n' "$PIPELOCK_SHA256" "/tmp/${ARCHIVE}" | sha256sum -c -
+          tar xzf "/tmp/${ARCHIVE}" -C /usr/local/bin pipelock
+          rm -f "/tmp/${ARCHIVE}"
+          pipelock --version
 
       - name: Verify committed bundles are current and signed
         run: scripts/check-published-signatures.sh
