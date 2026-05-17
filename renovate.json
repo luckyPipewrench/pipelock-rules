@@ -7,37 +7,71 @@
   ],
   "minimumReleaseAge": "10 days",
   "internalChecksFilter": "strict",
-  "labels": ["dependencies"],
+  "labels": [
+    "dependencies"
+  ],
   "prConcurrentLimit": 10,
   "vulnerabilityAlerts": {
-    "labels": ["security", "fast-track"],
+    "labels": [
+      "security",
+      "fast-track"
+    ],
     "minimumReleaseAge": "0 days",
-    "schedule": ["at any time"]
+    "schedule": [
+      "at any time"
+    ]
   },
   "packageRules": [
     {
-      "matchManagers": ["github-actions"],
+      "matchPackagePatterns": [
+        "^luckyPipewrench/",
+        "^ghcr\\.io/luckypipewrench/"
+      ],
+      "minimumReleaseAge": "0 days",
+      "description": "Own-org packages bypass cooldown (we control the supply chain)"
+    },
+    {
+      "matchManagers": [
+        "github-actions"
+      ],
       "pinDigests": true,
       "commitMessagePrefix": "ci:",
-      "addLabels": ["ci"],
+      "addLabels": [
+        "ci"
+      ],
       "groupName": "ci-actions"
     },
     {
-      "matchManagers": ["pip_requirements"],
-      "matchFileNames": [".github/**"],
+      "matchManagers": [
+        "pip_requirements"
+      ],
+      "matchFileNames": [
+        ".github/**"
+      ],
       "commitMessagePrefix": "ci:",
-      "addLabels": ["ci"],
+      "addLabels": [
+        "ci"
+      ],
       "groupName": "python-deps"
     },
     {
-      "matchManagers": ["pre-commit"],
+      "matchManagers": [
+        "pre-commit"
+      ],
       "commitMessagePrefix": "ci:",
-      "addLabels": ["ci"],
+      "addLabels": [
+        "ci"
+      ],
       "groupName": "pre-commit-hooks"
     },
     {
-      "matchUpdateTypes": ["major"],
-      "addLabels": ["major-update", "needs-review"],
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "addLabels": [
+        "major-update",
+        "needs-review"
+      ],
       "automerge": false
     }
   ]
