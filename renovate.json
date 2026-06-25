@@ -9,6 +9,7 @@
   "prHourlyLimit": 2,
   "labels": ["dependencies"],
   "lockFileMaintenance": { "enabled": false },
+  "osvVulnerabilityAlerts": true,
   "vulnerabilityAlerts": { "labels": ["security", "fast-track"], "minimumReleaseAge": "0 days", "schedule": ["at any time"] },
   "packageRules": [
     { "description": "Pin GitHub Actions to digests for the OpenSSF Scorecard pinned-dependencies check. Digest-maintenance PRs batch into the weekly group below.", "matchManagers": ["github-actions"], "pinDigests": true },
