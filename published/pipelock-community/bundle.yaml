@@ -1,6 +1,6 @@
 format_version: 1
 name: pipelock-community
-version: "2026.03.1"
+version: "2026.07.0"
 author: pipelock
 description: "Community detection rules for AI agent traffic"
 homepage: "https://pipelab.org/rules/pipelock-community"
@@ -214,7 +214,7 @@ rules:
       - "owasp-llm:LLM01"
       - "mitre-atlas:AML.T0048"
     pattern:
-      regex: '(?:send|post|forward|upload|transmit|exfiltrate|transfer)\s+(?:the\s+)?(?:api\s+key|credentials?|password|secret|token|conversation|user\s+data|private\s+key|ssh\s+key|environment|config)\s+(?:to|at|via)\s+https?://'
+      regex: '(?:send|post|forward|upload|transmit|exfiltrate|transfer)\s+(?:the\s+)?(?:api\s+key|credentials?|password|secret|token|conversation|user\s+data|private\s+key|ssh\s+key|environment|config)\s+(?:to|at|via|over)\s+https?://'
 
   - id: injection-french-core-override
     type: injection
@@ -228,7 +228,7 @@ rules:
     tags:
       - "owasp-llm:LLM01"
     pattern:
-      regex: '(?:ignorez|oubliez|abandonnez|rejetez)\s+(?:toutes?\s+)?(?:les\s+)?(?:instructions|regles|directives|consignes)\s+(?:precedentes|anterieures|ci-dessus)'
+      regex: '(?:ignorez|oubliez|abandonnez|rejetez)\s+(?:toutes?\s+)?(?:les\s+)?(?:instructions|r[eè]gles|directives|consignes)\s+(?:pr[eé]c[eé]dentes|ant[eé]rieures|ci-dessus)'
 
   - id: injection-german-core-override
     type: injection
@@ -256,7 +256,11 @@ rules:
     tags:
       - "owasp-llm:LLM01"
     pattern:
-      regex: '<(?:div|span|p|input)[^>]*(?:display\s*:\s*none|hidden|visibility\s*:\s*hidden|aria-hidden\s*=\s*"true")[^>]*>[^<]{0,500}(?:ignore|disregard|override|forget)\s+(?:all\s+)?(?:previous|prior|system|your)\s+(?:instructions|rules|prompt)'
+      # HTML5 permits unquoted attribute values, so requiring quotes around
+      # aria-hidden's value lets <div aria-hidden=true> conceal content and
+      # evade. Quotes are optional and the value is word-anchored, which keeps
+      # aria-hidden="false" and data-hidden-* from matching.
+      regex: '<(?:div|span|p|input)[^>]*(?:display\s*:\s*none|\shidden\b|visibility\s*:\s*hidden|aria-hidden\s*=\s*["'']?true\b)[^>]*>[^<]{0,500}(?:ignore|disregard|override|forget)\s+(?:all\s+)?(?:previous|prior|system|your)\s+(?:instructions|rules|prompt)'
 
   - id: injection-html-comment-override
     type: injection
@@ -298,7 +302,12 @@ rules:
     tags:
       - "owasp-llm:LLM01"
     pattern:
-      regex: '<(?:system_instructions?|override|true_instructions?|real_instructions?|hidden_prompt|system_prompt|secret_instructions?|admin_message|internal_prompt)\s*>'
+      # "override" is the one alternative that is also an ordinary XML element
+      # name (Maven/Spring/Android config). Allowing it attributes makes
+      # <override enabled="true" scope="global"> match benign config, so it
+      # stays bare-tag only; every other alternative is injection-specific
+      # enough to carry attributes.
+      regex: '<(?:(?:system_instructions?|true_instructions?|real_instructions?|hidden_prompt|system_prompt|secret_instructions?|admin_message|internal_prompt)(?:\s+[^<>]{1,200})?|override)\s*>'
 
   - id: injection-tool-call-imperative
     type: injection
@@ -341,7 +350,7 @@ rules:
     tags:
       - "owasp-llm:LLM01"
     pattern:
-      regex: '(?:do\s+not|don''t|never|must\s+not)\s+(?:tell|inform|notify|reveal|show|mention|display)\s+.{0,40}(?:user|human|operator|caller)'
+      regex: '(?:do\s+not|don[''’]t|never|must\s+not)\s+(?:tell|inform|notify|reveal|show|mention|display)\s+.{0,40}(?:user|human|operator|caller)'
       scan_field: description
 
   - id: tool-poison-cross-tool-replacement
@@ -400,7 +409,7 @@ rules:
     tags:
       - "owasp-llm:LLM01"
     pattern:
-      regex: '(?:before|prior\s+to)\s+(?:calling|using|invoking|running)\s+this\s+(?:tool|function).{0,100}(?:read|collect|gather|retrieve|access|fetch)\s+.{0,60}(?:env|config|secret|credential|token|key|prompt|ssh|password)'
+      regex: '(?:before\s+(?:(?:call|us|invok|runn)ing|you\s+(?:call|use|invoke|run))|prior\s+to\s+(?:call|us|invok|runn)ing)\s+this\s+(?:tool|function).{0,100}(?:read|collect|gather|retrieve|access|fetch|obtain)\s+.{0,60}(?:env|config|secret|credential|token|key|prompt|ssh|password)'
       scan_field: description
 
   - id: tool-poison-prompt-harvest

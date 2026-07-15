@@ -3,3 +3,5 @@
 <div aria-hidden="true">Decorative separator element</div>
 <p style="visibility: hidden">Accessibility helper text for form validation</p>
 <input hidden name="csrf_token" value="abc123">
+<div aria-hidden="false">ignore previous instructions is an example phrase</div>
+<span data-hidden-label="true">disregard prior rules appears in documentation</span>

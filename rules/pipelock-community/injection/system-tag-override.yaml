@@ -10,4 +10,9 @@
     tags:
       - "owasp-llm:LLM01"
     pattern:
-      regex: '<(?:system_instructions?|override|true_instructions?|real_instructions?|hidden_prompt|system_prompt|secret_instructions?|admin_message|internal_prompt)\s*>'
+      # "override" is the one alternative that is also an ordinary XML element
+      # name (Maven/Spring/Android config). Allowing it attributes makes
+      # <override enabled="true" scope="global"> match benign config, so it
+      # stays bare-tag only; every other alternative is injection-specific
+      # enough to carry attributes.
+      regex: '<(?:(?:system_instructions?|true_instructions?|real_instructions?|hidden_prompt|system_prompt|secret_instructions?|admin_message|internal_prompt)(?:\s+[^<>]{1,200})?|override)\s*>'

@@ -10,4 +10,4 @@
     tags:
       - "owasp-llm:LLM01"
     pattern:
-      regex: '(?:ignorez|oubliez|abandonnez|rejetez)\s+(?:toutes?\s+)?(?:les\s+)?(?:instructions|regles|directives|consignes)\s+(?:precedentes|anterieures|ci-dessus)'
+      regex: '(?:ignorez|oubliez|abandonnez|rejetez)\s+(?:toutes?\s+)?(?:les\s+)?(?:instructions|r[eè]gles|directives|consignes)\s+(?:pr[eé]c[eé]dentes|ant[eé]rieures|ci-dessus)'

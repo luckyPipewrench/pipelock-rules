@@ -4,3 +4,4 @@
 <prompt> Enter your username: </prompt>
 <admin_panel> Dashboard statistics </admin_panel>
 <hidden> This element is collapsed by default </hidden>
+<override enabled="true" scope="global">production-timeout</override>

@@ -11,4 +11,4 @@
       - "owasp-llm:LLM01"
       - "mitre-atlas:AML.T0048"
     pattern:
-      regex: '(?:send|post|forward|upload|transmit|exfiltrate|transfer)\s+(?:the\s+)?(?:api\s+key|credentials?|password|secret|token|conversation|user\s+data|private\s+key|ssh\s+key|environment|config)\s+(?:to|at|via)\s+https?://'
+      regex: '(?:send|post|forward|upload|transmit|exfiltrate|transfer)\s+(?:the\s+)?(?:api\s+key|credentials?|password|secret|token|conversation|user\s+data|private\s+key|ssh\s+key|environment|config)\s+(?:to|at|via|over)\s+https?://'
