@@ -36,6 +36,7 @@ sign:
 # Run fixture tests against compiled bundle regexes
 test-fixtures:
 	@echo "Testing fixtures..."
+	@go test scripts/test-fixtures.go scripts/test-fixtures_test.go
 	@BUNDLE_NAME="$(BUNDLE_NAME)" ./scripts/test-fixtures.sh
 	@echo "All fixture tests passed."
 

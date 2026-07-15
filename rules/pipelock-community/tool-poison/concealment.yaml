@@ -10,5 +10,5 @@
     tags:
       - "owasp-llm:LLM01"
     pattern:
-      regex: '(?:do\s+not|don''t|never|must\s+not)\s+(?:tell|inform|notify|reveal|show|mention|display)\s+.{0,40}(?:user|human|operator|caller)'
+      regex: '(?:do\s+not|don[''’]t|never|must\s+not)\s+(?:tell|inform|notify|reveal|show|mention|display)\s+.{0,40}(?:user|human|operator|caller)'
       scan_field: description

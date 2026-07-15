@@ -12,6 +12,7 @@ jobs:
   review:
     if: >-
       github.event.issue.pull_request &&
+      contains(fromJSON('["OWNER","MEMBER","COLLABORATOR"]'), github.event.comment.author_association) &&
       (github.event.comment.body == '/review' ||
        github.event.comment.body == '/review fast' ||
        github.event.comment.body == '/review deep')

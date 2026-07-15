@@ -13,7 +13,7 @@ fi
 
 case "$BUNDLE_NAME" in
   pipelock-community)
-    VERSION="2026.03.1"
+    VERSION="2026.07.0"
     AUTHOR="pipelock"
     DESCRIPTION="Community detection rules for AI agent traffic"
     HOMEPAGE="https://pipelab.org/rules/pipelock-community"
