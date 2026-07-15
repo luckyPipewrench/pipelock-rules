@@ -51,6 +51,8 @@ func main() {
 }
 
 func parseRules(path string) ([]rule, error) {
+	// compile.sh emits a canonical, single-line subset for these fields. Keep
+	// this parser strict and fail closed if that compiler contract changes.
 	file, err := os.Open(filepath.Clean(path))
 	if err != nil {
 		return nil, fmt.Errorf("open bundle: %w", err)
@@ -64,8 +66,8 @@ func parseRules(path string) ([]rule, error) {
 		line := scanner.Text()
 		if match := idLine.FindStringSubmatch(line); match != nil {
 			if current != nil {
-				if current.pattern == "" {
-					return nil, fmt.Errorf("rule %s has no regex", current.id)
+				if err := validateParsedRule(current); err != nil {
+					return nil, err
 				}
 				rules = append(rules, *current)
 			}
@@ -91,8 +93,8 @@ func parseRules(path string) ([]rule, error) {
 		return nil, fmt.Errorf("read bundle: %w", err)
 	}
 	if current != nil {
-		if current.pattern == "" {
-			return nil, fmt.Errorf("rule %s has no regex", current.id)
+		if err := validateParsedRule(current); err != nil {
+			return nil, err
 		}
 		rules = append(rules, *current)
 	}
@@ -100,6 +102,16 @@ func parseRules(path string) ([]rule, error) {
 		return nil, fmt.Errorf("bundle contains no parsed rules")
 	}
 	return rules, nil
+}
+
+func validateParsedRule(current *rule) error {
+	if current.status != "stable" && current.status != "experimental" {
+		return fmt.Errorf("rule %s has missing or unsupported status %q", current.id, current.status)
+	}
+	if current.pattern == "" {
+		return fmt.Errorf("rule %s has no regex", current.id)
+	}
+	return nil
 }
 
 func testRules(rules []rule, fixtureRoot string) (int, []string) {

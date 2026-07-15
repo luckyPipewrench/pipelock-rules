@@ -106,6 +106,7 @@ jobs:
         env:
           BASE_REF: ${{ github.event.pull_request.base.sha || github.event.before }}
         run: |
+          scripts/test-version-bumps.sh
           scripts/check-version-bumps.sh "$BASE_REF"
           scripts/check-published-signatures.sh
 
@@ -152,7 +153,7 @@ jobs:
       - name: Lint compiled bundle
         run: |
           BUNDLE_NAME=${{ matrix.bundle }} make compile
-          yamllint -d '{extends: default, rules: {line-length: {max: 300}, document-start: disable, truthy: disable, empty-lines: {max: 1}}}' "published/${{ matrix.bundle }}/bundle.yaml"
+          yamllint -d '{extends: default, rules: {line-length: {max: 400}, document-start: disable, truthy: disable, empty-lines: {max: 1}}}' "published/${{ matrix.bundle }}/bundle.yaml"
 
   yaml-lint-required:
     name: Lint YAML

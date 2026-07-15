@@ -256,11 +256,9 @@ rules:
     tags:
       - "owasp-llm:LLM01"
     pattern:
-      # HTML5 permits unquoted attribute values, so requiring quotes around
-      # aria-hidden's value lets <div aria-hidden=true> conceal content and
-      # evade. Quotes are optional and the value is word-anchored, which keeps
-      # aria-hidden="false" and data-hidden-* from matching.
-      regex: '<(?:div|span|p|input)[^>]*(?:display\s*:\s*none|\shidden\b|visibility\s*:\s*hidden|aria-hidden\s*=\s*["'']?true\b)[^>]*>[^<]{0,500}(?:ignore|disregard|override|forget)\s+(?:all\s+)?(?:previous|prior|system|your)\s+(?:instructions|rules|prompt)'
+      # Match exact hidden/aria-hidden attributes, including HTML5 unquoted
+      # true, without treating class names such as hidden-label as attributes.
+      regex: '<(?:div|span|p|input)(?:[^>]*(?:display\s*:\s*none|visibility\s*:\s*hidden)[^>]*|[^>]*aria-hidden\s*=\s*(?:"true"[^>]*|''true''[^>]*|true(?:\s+[^>]*)?)|[^>]*\shidden(?:\s+[^>]*)?)>[^<]{0,500}(?:ignore|disregard|override|forget)\s+(?:all\s+)?(?:previous|prior|system|your)\s+(?:instructions|rules|prompt)'
 
   - id: injection-html-comment-override
     type: injection
@@ -302,12 +300,9 @@ rules:
     tags:
       - "owasp-llm:LLM01"
     pattern:
-      # "override" is the one alternative that is also an ordinary XML element
-      # name (Maven/Spring/Android config). Allowing it attributes makes
-      # <override enabled="true" scope="global"> match benign config, so it
-      # stays bare-tag only; every other alternative is injection-specific
-      # enough to carry attributes.
-      regex: '<(?:(?:system_instructions?|true_instructions?|real_instructions?|hidden_prompt|system_prompt|secret_instructions?|admin_message|internal_prompt)(?:\s+[^<>]{1,200})?|override)\s*>'
+      # Require suspicious inner text as well as a fake privileged tag. This
+      # avoids treating benign admin_message/internal_prompt XML as an attack.
+      regex: '<(?:(?:system_instructions?|true_instructions?|real_instructions?|hidden_prompt|system_prompt|secret_instructions?|admin_message|internal_prompt)(?:\s+[^<>]{1,200})?|override)\s*>[^<]{0,300}(?:ignore|discard|forget|reveal|return|follow|bypass|extract|output|proceed|no\s+(?:restrictions|content\s+policy)|privileges\s+granted)'
 
   - id: injection-tool-call-imperative
     type: injection
@@ -409,7 +404,7 @@ rules:
     tags:
       - "owasp-llm:LLM01"
     pattern:
-      regex: '(?:before\s+(?:(?:call|us|invok|runn)ing|you\s+(?:call|use|invoke|run))|prior\s+to\s+(?:call|us|invok|runn)ing)\s+this\s+(?:tool|function).{0,100}(?:read|collect|gather|retrieve|access|fetch|obtain)\s+.{0,60}(?:env|config|secret|credential|token|key|prompt|ssh|password)'
+      regex: '(?:before\s+(?:(?:calling|using|invoking|running|executing)|you\s+(?:call|use|invoke|run|execute))|prior\s+to\s+(?:calling|using|invoking|running|executing))\s+this\s+(?:tool|function).{0,100}(?:read|collect|gather|retrieve|access|fetch|obtain)\s+.{0,60}(?:env|config|secret|credential|token|key|prompt|ssh|password)'
       scan_field: description
 
   - id: tool-poison-prompt-harvest

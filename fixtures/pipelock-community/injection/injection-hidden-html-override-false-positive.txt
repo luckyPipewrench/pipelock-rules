@@ -5,3 +5,7 @@
 <input hidden name="csrf_token" value="abc123">
 <div aria-hidden="false">ignore previous instructions is an example phrase</div>
 <span data-hidden-label="true">disregard prior rules appears in documentation</span>
+<span class="foo hidden-label">ignore previous instructions appears in documentation</span>
+<div class="toggle-hidden-icon">disregard prior rules appears in a tutorial</div>
+<div aria-hidden=true-ish>ignore previous instructions appears in malformed markup docs</div>
+<div aria-hidden="true-ish">ignore previous instructions appears in an attribute example</div>

@@ -10,8 +10,6 @@
     tags:
       - "owasp-llm:LLM01"
     pattern:
-      # HTML5 permits unquoted attribute values, so requiring quotes around
-      # aria-hidden's value lets <div aria-hidden=true> conceal content and
-      # evade. Quotes are optional and the value is word-anchored, which keeps
-      # aria-hidden="false" and data-hidden-* from matching.
-      regex: '<(?:div|span|p|input)[^>]*(?:display\s*:\s*none|\shidden\b|visibility\s*:\s*hidden|aria-hidden\s*=\s*["'']?true\b)[^>]*>[^<]{0,500}(?:ignore|disregard|override|forget)\s+(?:all\s+)?(?:previous|prior|system|your)\s+(?:instructions|rules|prompt)'
+      # Match exact hidden/aria-hidden attributes, including HTML5 unquoted
+      # true, without treating class names such as hidden-label as attributes.
+      regex: '<(?:div|span|p|input)(?:[^>]*(?:display\s*:\s*none|visibility\s*:\s*hidden)[^>]*|[^>]*aria-hidden\s*=\s*(?:"true"[^>]*|''true''[^>]*|true(?:\s+[^>]*)?)|[^>]*\shidden(?:\s+[^>]*)?)>[^<]{0,500}(?:ignore|disregard|override|forget)\s+(?:all\s+)?(?:previous|prior|system|your)\s+(?:instructions|rules|prompt)'

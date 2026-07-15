@@ -49,3 +49,15 @@ func TestABAValidatorMatchesProductionChecksum(t *testing.T) {
 		t.Fatal("invalid ABA routing checksum accepted")
 	}
 }
+
+func TestParseRulesRejectsMissingStatus(t *testing.T) {
+	bundle := filepath.Join(t.TempDir(), "bundle.yaml")
+	content := "rules:\n  - id: injection-example\n    pattern:\n      regex: 'ignore'\n"
+	if err := os.WriteFile(bundle, []byte(content), 0o600); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+	_, err := parseRules(bundle)
+	if err == nil || !strings.Contains(err.Error(), "missing or unsupported status") {
+		t.Fatalf("parseRules error = %v", err)
+	}
+}
