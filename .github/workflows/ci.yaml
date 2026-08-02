@@ -72,6 +72,20 @@ jobs:
           test "${{ needs.validate.result }}" = "success"
           test "${{ needs.published-signatures.result }}" = "success"
 
+  # `Test fixtures` is a required status check. The fixture run now happens
+  # inside the preflight matrix, so this reports that name from the matrix
+  # result. Without it the requirement is unsatisfiable and every pull request
+  # stays blocked while appearing merely pending.
+  test-fixtures-required:
+    name: Test fixtures
+    needs: [validate]
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    steps:
+      - name: Confirm matrix passed
+        run: test "${{ needs.validate.result }}" = "success"
+
   published-signatures:
     name: Verify published signatures
     needs: [security-scan]
