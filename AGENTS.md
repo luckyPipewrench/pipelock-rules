@@ -25,7 +25,7 @@ Set `BUNDLE_NAME=<bundle-name>` to work on a non-default bundle, for example `BU
 
 ## Repository Layout
 
-```
+```text
 rules/
   pipelock-community/
     dlp/            One YAML file per DLP pattern
@@ -57,7 +57,8 @@ scripts/
 2. Add `fixtures/{bundle}/{type}/{rule-id}-true-positive.txt` (one match per line)
 3. Add `fixtures/{bundle}/{type}/{rule-id}-false-positive.txt` (stable rules only)
 4. Run `BUNDLE_NAME={bundle} make compile && BUNDLE_NAME={bundle} make test-fixtures`
-5. Submit a PR
+5. Run `BUNDLE_NAME={bundle} make validate`, which installs the compiled bundle with Pipelock and checks the schema and every regex. Compilation and fixture tests alone do not cover that.
+6. Submit a PR
 
 ## Rule YAML Schema
 
@@ -77,7 +78,14 @@ Every rule requires these fields:
     - "provider:example"
   pattern:
     regex: 'ex_[A-Za-z0-9]{32,}' # RE2-compatible
-    scan_field: description       # tool-poison only: name or description
+```
+
+`scan_field` is conditional, not required. It applies to tool-poison rules only, where it selects `name` or `description`. DLP rules omit it entirely; see `rules/pipelock-community/dlp/vercel-project.yaml` for a rule that carries every required field and no `scan_field`.
+
+```yaml
+  pattern:
+    regex: 'ex_[A-Za-z0-9]{32,}'
+    scan_field: description       # tool-poison rules only
 ```
 
 ## Regex Guidelines
