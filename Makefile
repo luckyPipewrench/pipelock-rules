@@ -1,13 +1,33 @@
 BUNDLE_NAME ?= pipelock-community
 BUNDLE_DIR := published/$(BUNDLE_NAME)
 BUNDLE_FILE := $(BUNDLE_DIR)/bundle.yaml
+PREFLIGHT_BUNDLES := pipelock-community healthcare-phi-pii
 
 # Temporary name for validation: avoids the pipelock-* prefix reservation
 # that blocks unsigned local installs of official-prefix bundles.
+TMPDIR := $(HOME)/.cache/pipelock-tmp
+GOCACHE := $(HOME)/.cache/go-build
+export TMPDIR GOCACHE
 VALIDATE_NAME ?= validate-$(BUNDLE_NAME)
-VALIDATE_DIR := /tmp/pipelock-validate-rules
+VALIDATE_DIR := $(TMPDIR)/pipelock-validate-rules
 
-.PHONY: compile validate sign test-fixtures publish clean stats
+.PHONY: preflight compile validate require-pipelock sign test-fixtures publish clean stats
+
+# Runs fully offline when Pipelock is already installed. The CLI is the schema
+# authority, so absence is a clear fail-closed prerequisite error, never an
+# implicit download or a skipped schema check. Check every maintained bundle:
+# a default-only gate would miss a normal healthcare rule change.
+preflight:
+	@set -e; for bundle in $(PREFLIGHT_BUNDLES); do \
+		$(MAKE) BUNDLE_NAME="$$bundle" validate test-fixtures; \
+	done
+
+require-pipelock:
+	@command -v pipelock >/dev/null 2>&1 || { \
+		echo "preflight: FAIL - schema validation requires a preinstalled Pipelock CLI"; \
+		echo "  This target never downloads tools; install Pipelock, then rerun make preflight."; \
+		exit 1; \
+	}
 
 # Compile individual rule files into a single bundle.yaml
 compile:
@@ -18,7 +38,7 @@ compile:
 
 # Validate the compiled bundle: copy with a non-reserved name so
 # pipelock rules install accepts it without a signature.
-validate: compile
+validate: require-pipelock compile
 	@echo "Validating bundle..."
 	@rm -rf $(VALIDATE_DIR)
 	@mkdir -p $(VALIDATE_DIR)/$(VALIDATE_NAME)
