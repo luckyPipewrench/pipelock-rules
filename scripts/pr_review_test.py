@@ -59,15 +59,15 @@ class ModelRoutingTest(unittest.TestCase):
         self.assertEqual(payload["reasoning_effort"], "low")
         self.assertEqual(payload["max_completion_tokens"], 8192)
 
-    def test_deep_gpt5_payload_uses_medium_reasoning(self) -> None:
+    def test_deep_gpt5_payload_uses_xhigh_reasoning(self) -> None:
         payload = pr_review.build_llm_payload(
             "gpt-5.6-terra",
             "diff",
             max_completion_tokens=pr_review.DEEP_MAX_COMPLETION_TOKENS,
             reasoning_effort=pr_review.DEEP_REASONING_EFFORT,
         )
-        self.assertEqual(payload["reasoning_effort"], "medium")
-        self.assertEqual(payload["max_completion_tokens"], 25000)
+        self.assertEqual(payload["reasoning_effort"], "xhigh")
+        self.assertEqual(payload["max_completion_tokens"], 64000)
 
     def test_empty_overrides_fall_back_to_python_defaults(self) -> None:
         with mock.patch.dict(
@@ -131,7 +131,7 @@ class CallLLMTest(unittest.TestCase):
         self.assertEqual(kwargs["json"]["reasoning_effort"], "low")
         self.assertEqual(kwargs["timeout"], pr_review.DEFAULT_LLM_TIMEOUT_SECONDS)
 
-    def test_deep_mode_uses_terra_medium_reasoning_and_longer_timeout(self) -> None:
+    def test_deep_mode_uses_terra_xhigh_reasoning_and_longer_timeout(self) -> None:
         response = FakeResponse({"choices": [{"message": {"content": "review"}}]})
         with mock.patch.dict(
             pr_review.os.environ, {"OPENAI_API_KEY": "test-key"}, clear=True
@@ -140,8 +140,8 @@ class CallLLMTest(unittest.TestCase):
 
         _, kwargs = post.call_args
         self.assertEqual(kwargs["json"]["model"], "gpt-5.6-terra")
-        self.assertEqual(kwargs["json"]["reasoning_effort"], "medium")
-        self.assertEqual(kwargs["json"]["max_completion_tokens"], 25000)
+        self.assertEqual(kwargs["json"]["reasoning_effort"], "xhigh")
+        self.assertEqual(kwargs["json"]["max_completion_tokens"], 64000)
         self.assertEqual(kwargs["timeout"], pr_review.DEEP_LLM_TIMEOUT_SECONDS)
 
     def test_non_200_is_an_error_not_a_published_review(self) -> None:
