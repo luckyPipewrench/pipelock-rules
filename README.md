@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License"></a>
-  <a href="https://github.com/luckyPipewrench/pipelock"><img src="https://img.shields.io/badge/pipelock-v2.4.0%2B-00e5a0" alt="Pipelock"></a>
+  <a href="https://github.com/luckyPipewrench/pipelock"><img src="https://img.shields.io/badge/tested_with_Pipelock-v3.4.0-00e5a0" alt="Tested with Pipelock v3.4.0"></a>
   <a href="https://discord.gg/badNfhGKTc"><img alt="Discord" src="https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?logo=discord&logoColor=white"></a>
 </p>
 
@@ -21,7 +21,7 @@ A **rule bundle** is a signed YAML file containing detection rules. Pipelock loa
 │                    pipelock scanner                   │
 │                                                      │
 │  Built-in patterns     +   Rule bundles (additive)   │
-│  ├── 70+ DLP regexes       ├── pipelock-community    │
+│  ├── 65 DLP patterns       ├── pipelock-community    │
 │  ├── injection detection   ├── acme-corp-internal    │
 │  └── tool-poison checks    └── your-bundle-here      │
 │                                                      │

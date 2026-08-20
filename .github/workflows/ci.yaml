@@ -24,7 +24,7 @@ jobs:
           fetch-depth: 0
 
       - name: Pipelock Scan
-        uses: luckyPipewrench/pipelock@e8a396d244af27b1367e116fa22fc61246884ab3 # v3.1.0
+        uses: luckyPipewrench/pipelock@4c748ab986d611138ce202ab800b16eca6fb589f # v3.4.0
         with:
           scan-diff: 'true'
           fail-on-findings: 'true'
@@ -47,8 +47,8 @@ jobs:
       - name: Install pipelock
         run: |
           set -euo pipefail
-          PIPELOCK_VERSION=3.1.0
-          PIPELOCK_SHA256=e474b26ae5b12af75106e079c0a3d505c40022f85bef18737011e3c12c9969be
+          PIPELOCK_VERSION=3.4.0
+          PIPELOCK_SHA256=37c267a9c7a5472324e3bb07def179e810a5ae7c8e761537ad1e9b2e32e9abac
           RELEASE_URL="https://github.com/luckyPipewrench/pipelock/releases/download/v${PIPELOCK_VERSION}"
           ARCHIVE="pipelock_${PIPELOCK_VERSION}_linux_amd64.tar.gz"
           curl -fsSLo "/tmp/${ARCHIVE}" "${RELEASE_URL}/${ARCHIVE}"
@@ -60,9 +60,44 @@ jobs:
       - name: Run local preflight gate
         run: make preflight
 
+  compatibility-floor:
+    name: Compatibility floor (${{ matrix.bundle }}, v${{ matrix.version }})
+    needs: [security-scan]
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - bundle: pipelock-community
+            version: 1.4.0
+            sha256: 6197c4661d96854b1b5f36fe6ac7113522eeddccc8314bcfb1d5750ce6ce6610
+          - bundle: healthcare-phi-pii
+            version: 1.5.0
+            sha256: ed6aeaf97a8928272254508d516e34e74fce4dfcfdf4a6ea1efac21b188aadc2
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Install declared minimum Pipelock
+        env:
+          PIPELOCK_VERSION: ${{ matrix.version }}
+          PIPELOCK_SHA256: ${{ matrix.sha256 }}
+        run: |
+          set -euo pipefail
+          archive="pipelock_${PIPELOCK_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLo "/tmp/${archive}" "https://github.com/luckyPipewrench/pipelock/releases/download/v${PIPELOCK_VERSION}/${archive}"
+          printf '%s  %s\n' "$PIPELOCK_SHA256" "/tmp/${archive}" | sha256sum -c -
+          tar xzf "/tmp/${archive}" -C /usr/local/bin pipelock
+          pipelock --version
+
+      - name: Validate bundle at its declared floor
+        run: make BUNDLE_NAME=${{ matrix.bundle }} validate
+
   validate-required:
     name: Validate bundle
-    needs: [validate, published-signatures]
+    needs: [validate, compatibility-floor, published-signatures]
     if: always()
     runs-on: ubuntu-latest
     timeout-minutes: 1
@@ -70,6 +105,7 @@ jobs:
       - name: Confirm matrix passed
         run: |
           test "${{ needs.validate.result }}" = "success"
+          test "${{ needs.compatibility-floor.result }}" = "success"
           test "${{ needs.published-signatures.result }}" = "success"
 
   # `Test fixtures` is a required status check. The fixture run now happens
@@ -102,8 +138,8 @@ jobs:
       - name: Install pipelock
         run: |
           set -euo pipefail
-          PIPELOCK_VERSION=3.1.0
-          PIPELOCK_SHA256=e474b26ae5b12af75106e079c0a3d505c40022f85bef18737011e3c12c9969be
+          PIPELOCK_VERSION=3.4.0
+          PIPELOCK_SHA256=37c267a9c7a5472324e3bb07def179e810a5ae7c8e761537ad1e9b2e32e9abac
           RELEASE_URL="https://github.com/luckyPipewrench/pipelock/releases/download/v${PIPELOCK_VERSION}"
           ARCHIVE="pipelock_${PIPELOCK_VERSION}_linux_amd64.tar.gz"
           curl -fsSLo "/tmp/${ARCHIVE}" "${RELEASE_URL}/${ARCHIVE}"
