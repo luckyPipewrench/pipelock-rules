@@ -16,6 +16,7 @@ const maxFixtureLineBytes = 1 << 20
 
 var (
 	idLine        = regexp.MustCompile(`^\s*- id:\s*(\S+)\s*$`)
+	ruleStartLine = regexp.MustCompile(`^\s*-\s+id\s*:`)
 	statusLine    = regexp.MustCompile(`^\s*status:\s*(\S+)\s*$`)
 	regexLine     = regexp.MustCompile(`^\s*regex:\s*'(.*)'\s*$`)
 	validatorLine = regexp.MustCompile(`^\s*validator:\s*(\S+)\s*$`)
@@ -74,6 +75,9 @@ func parseRules(path string) ([]rule, error) {
 			current = &rule{id: match[1]}
 			continue
 		}
+		if ruleStartLine.MatchString(line) {
+			return nil, fmt.Errorf("malformed rule id line %q", line)
+		}
 		if current == nil {
 			continue
 		}
@@ -100,6 +104,13 @@ func parseRules(path string) ([]rule, error) {
 	}
 	if len(rules) == 0 {
 		return nil, fmt.Errorf("bundle contains no parsed rules")
+	}
+	seenIDs := make(map[string]struct{}, len(rules))
+	for _, parsed := range rules {
+		if _, exists := seenIDs[parsed.id]; exists {
+			return nil, fmt.Errorf("duplicate rule id %q", parsed.id)
+		}
+		seenIDs[parsed.id] = struct{}{}
 	}
 	return rules, nil
 }
