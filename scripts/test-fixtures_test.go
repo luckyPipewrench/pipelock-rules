@@ -61,3 +61,75 @@ func TestParseRulesRejectsMissingStatus(t *testing.T) {
 		t.Fatalf("parseRules error = %v", err)
 	}
 }
+
+func TestParseRulesRejectsDuplicateIDs(t *testing.T) {
+	bundle := filepath.Join(t.TempDir(), "bundle.yaml")
+	content := "rules:\n" +
+		"  - id: dlp-example\n" +
+		"    status: stable\n" +
+		"    pattern:\n" +
+		"      regex: 'first'\n" +
+		"  - id: dlp-example\n" +
+		"    status: experimental\n" +
+		"    pattern:\n" +
+		"      regex: 'second'\n"
+	if err := os.WriteFile(bundle, []byte(content), 0o600); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+	_, err := parseRules(bundle)
+	if err == nil || !strings.Contains(err.Error(), `duplicate rule id "dlp-example"`) {
+		t.Fatalf("parseRules error = %v", err)
+	}
+}
+
+func TestParseRulesRejectsMalformedFirstRuleID(t *testing.T) {
+	bundle := filepath.Join(t.TempDir(), "bundle.yaml")
+	content := "rules:\n" +
+		"  - id: dlp example\n" +
+		"    status: stable\n" +
+		"    pattern:\n" +
+		"      regex: 'first'\n"
+	if err := os.WriteFile(bundle, []byte(content), 0o600); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+	_, err := parseRules(bundle)
+	if err == nil || !strings.Contains(err.Error(), "malformed rule id line") {
+		t.Fatalf("parseRules error = %v", err)
+	}
+}
+
+func TestParseRulesRejectsNonCanonicalRuleIDKey(t *testing.T) {
+	bundle := filepath.Join(t.TempDir(), "bundle.yaml")
+	content := "rules:\n" +
+		"  - id : dlp-example\n" +
+		"    status: stable\n" +
+		"    pattern:\n" +
+		"      regex: 'first'\n"
+	if err := os.WriteFile(bundle, []byte(content), 0o600); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+	_, err := parseRules(bundle)
+	if err == nil || !strings.Contains(err.Error(), "malformed rule id line") {
+		t.Fatalf("parseRules error = %v", err)
+	}
+}
+
+func TestParseRulesRejectsMalformedLaterRuleIDBeforeOverwrite(t *testing.T) {
+	bundle := filepath.Join(t.TempDir(), "bundle.yaml")
+	content := "rules:\n" +
+		"  - id: dlp-first\n" +
+		"    status: stable\n" +
+		"    pattern:\n" +
+		"      regex: 'first'\n" +
+		"  - id: dlp second\n" +
+		"    status: experimental\n" +
+		"    pattern:\n" +
+		"      regex: 'second'\n"
+	if err := os.WriteFile(bundle, []byte(content), 0o600); err != nil {
+		t.Fatalf("WriteFile: %v", err)
+	}
+	_, err := parseRules(bundle)
+	if err == nil || !strings.Contains(err.Error(), "malformed rule id line") {
+		t.Fatalf("parseRules error = %v", err)
+	}
+}
