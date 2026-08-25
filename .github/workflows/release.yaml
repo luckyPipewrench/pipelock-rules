@@ -1,0 +1,73 @@
+name: Release
+
+# Repository releases use plain v-tags for repository tooling. Bundle CalVer
+# remains independent and is read from each published bundle below.
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Publish signed bundles
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          persist-credentials: false
+
+      - name: Prepare release assets and body
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p release-assets
+          mapfile -d '' bundle_dirs < <(find published -mindepth 1 -maxdepth 1 -type d -print0 | sort -z)
+          if (( ${#bundle_dirs[@]} == 0 )); then
+            echo 'release: FAIL - no published bundles found' >&2
+            exit 1
+          fi
+
+          {
+            printf '# Pipelock Rules %s\n\n' "${GITHUB_REF_NAME}"
+            printf 'This repository release packages these independently versioned bundles:\n\n'
+            for bundle_dir in "${bundle_dirs[@]}"; do
+              bundle="$(basename "$bundle_dir")"
+              bundle_file="$bundle_dir/bundle.yaml"
+              signature_file="$bundle_file.sig"
+              if [[ ! "$bundle" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
+                printf 'release: FAIL - invalid bundle directory name: %s\n' "$bundle" >&2
+                exit 1
+              fi
+              if [[ ! -f "$bundle_file" || ! -f "$signature_file" ]]; then
+                printf 'release: FAIL - %s must contain bundle.yaml and bundle.yaml.sig\n' "$bundle_dir" >&2
+                exit 1
+              fi
+              version="$(sed -n 's/^version: "\([^"]*\)"$/\1/p' "$bundle_file")"
+              if [[ -z "$version" || "$version" == *$'\n'* ]]; then
+                printf 'release: FAIL - %s must contain exactly one quoted version line\n' "$bundle_file" >&2
+                exit 1
+              fi
+              cp "$bundle_file" "release-assets/${bundle}-bundle.yaml"
+              cp "$signature_file" "release-assets/${bundle}-bundle.yaml.sig"
+              printf -- '- `%s` `%s`\n' "$bundle" "$version"
+            done
+            printf '\nRepository tags use plain `v*` versions for release packaging and tooling. Each bundle keeps its own CalVer version.\n'
+          } > release-body.md
+
+          (
+            cd release-assets
+            LC_ALL=C sha256sum ./*-bundle.yaml ./*-bundle.yaml.sig > SHA256SUMS
+          )
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228  # v3.0.2
+        with:
+          name: Pipelock Rules ${{ github.ref_name }}
+          body_path: release-body.md
+          fail_on_unmatched_files: true
+          files: |
+            release-assets/*

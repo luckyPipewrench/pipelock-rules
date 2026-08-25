@@ -44,6 +44,8 @@ pipelock rules install --path ./my-bundle/ --allow-unsigned
 pipelock rules list
 ```
 
+Repository releases use plain `v*` tags for packaging and repository tooling. Each bundle keeps its own CalVer version, so a repository tag doesn't replace or synchronize bundle versions.
+
 ## The Community Bundle
 
 This repo contains **pipelock-community**, the official community bundle. It ships 28 detection rules across three categories:
