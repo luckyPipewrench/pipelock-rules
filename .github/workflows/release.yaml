@@ -20,6 +20,28 @@ jobs:
         with:
           persist-credentials: false
 
+      # A release asset labelled "signed" must have had its signature checked
+      # against the pinned official key at release time. Asset presence is not
+      # verification: a stale compile or a signature over older content would
+      # otherwise ship as official and fail the documented install flow.
+      - name: Install pipelock
+        run: |
+          set -euo pipefail
+          PIPELOCK_VERSION=3.4.0
+          PIPELOCK_SHA256=37c267a9c7a5472324e3bb07def179e810a5ae7c8e761537ad1e9b2e32e9abac
+          RELEASE_URL="https://github.com/luckyPipewrench/pipelock/releases/download/v${PIPELOCK_VERSION}"
+          ARCHIVE="pipelock_${PIPELOCK_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLo "/tmp/${ARCHIVE}" "${RELEASE_URL}/${ARCHIVE}"
+          printf '%s  %s\n' "$PIPELOCK_SHA256" "/tmp/${ARCHIVE}" | sha256sum -c -
+          tar xzf "/tmp/${ARCHIVE}" -C /usr/local/bin pipelock
+          rm -f "/tmp/${ARCHIVE}"
+          pipelock --version
+
+      - name: Verify published bundles are current and signed
+        env:
+          EXPECTED_OFFICIAL_PUBKEY_SHA256: ${{ vars.RULES_OFFICIAL_PUBKEY_SHA256 }}
+        run: scripts/check-published-signatures.sh
+
       - name: Prepare release assets and body
         shell: bash
         run: |
@@ -46,11 +68,17 @@ jobs:
                 printf 'release: FAIL - %s must contain bundle.yaml and bundle.yaml.sig\n' "$bundle_dir" >&2
                 exit 1
               fi
-              version="$(sed -n 's/^version: "\([^"]*\)"$/\1/p' "$bundle_file")"
-              if [[ -z "$version" || "$version" == *$'\n'* ]]; then
+              # Collect every matching line and require exactly one non-empty
+              # value. Reading into a scalar hid a duplicate declaration whose
+              # empty value sorted last, because command substitution strips
+              # trailing newlines and the result then looked single-valued.
+              versions=()
+              mapfile -t versions < <(sed -n 's/^version: "\([^"]*\)"$/\1/p' "$bundle_file")
+              if (( ${#versions[@]} != 1 )) || [[ -z "${versions[0]}" ]]; then
                 printf 'release: FAIL - %s must contain exactly one quoted version line\n' "$bundle_file" >&2
                 exit 1
               fi
+              version="${versions[0]}"
               cp "$bundle_file" "release-assets/${bundle}-bundle.yaml"
               cp "$signature_file" "release-assets/${bundle}-bundle.yaml.sig"
               printf -- '- `%s` `%s`\n' "$bundle" "$version"

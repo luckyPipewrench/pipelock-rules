@@ -67,7 +67,49 @@ for bundle_dir in "${bundle_dirs[@]}"; do
 		status=1
 		continue
 	fi
-	printf 'served-copy drift: OK - %s repository and served versions are %s\n' "$bundle" "$repo_version"
+
+	# Matching versions are not matching content. Served bytes can change
+	# under an unchanged version, which is exactly the silent substitution
+	# this check exists to catch, so compare the bytes themselves.
+	read -r repo_digest _ < <(sha256sum "$repo_file")
+	read -r served_digest _ < <(sha256sum "$served_file")
+	if [[ "$repo_digest" != "$served_digest" ]]; then
+		printf 'served-copy drift: FAIL - %s content mismatch at version %s (repository: %s, served: %s)\n' "$bundle" "$repo_version" "$repo_digest" "$served_digest" >&2
+		status=1
+		continue
+	fi
+
+	# The detached signature is served alongside the bundle and is what an
+	# installer verifies, so drift in it is drift in the install path.
+	repo_sig="$repo_file.sig"
+	served_sig="$temp_dir/${bundle}.yaml.sig"
+	sig_url="${RULES_BASE_URL%/}/${bundle}/bundle.yaml.sig"
+	if [[ ! -f "$repo_sig" ]]; then
+		printf 'served-copy drift: FAIL - repository signature is missing: %s\n' "$repo_sig" >&2
+		status=1
+		continue
+	fi
+	if [[ -n "$DRIFT_CHECK_FIXTURE_ROOT" ]]; then
+		fixture_sig="${DRIFT_CHECK_FIXTURE_ROOT%/}/${bundle}/bundle.yaml.sig"
+		if ! cp "$fixture_sig" "$served_sig" 2>/dev/null; then
+			printf 'served-copy drift: FAIL - fixture signature is unreadable: %s\n' "$fixture_sig" >&2
+			status=1
+			continue
+		fi
+	elif ! curl --fail --silent --show-error --location --connect-timeout 10 --max-time 30 --output "$served_sig" "$sig_url"; then
+		printf 'served-copy drift: FAIL - could not fetch %s\n' "$sig_url" >&2
+		status=1
+		continue
+	fi
+	read -r repo_sig_digest _ < <(sha256sum "$repo_sig")
+	read -r served_sig_digest _ < <(sha256sum "$served_sig")
+	if [[ "$repo_sig_digest" != "$served_sig_digest" ]]; then
+		printf 'served-copy drift: FAIL - %s signature mismatch at version %s (repository: %s, served: %s)\n' "$bundle" "$repo_version" "$repo_sig_digest" "$served_sig_digest" >&2
+		status=1
+		continue
+	fi
+
+	printf 'served-copy drift: OK - %s repository and served copies match at version %s\n' "$bundle" "$repo_version"
 done
 
 exit "$status"
