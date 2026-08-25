@@ -38,7 +38,33 @@ Rules are welcome via pull request. Each rule must meet the quality bar below be
 
 ## Contributing a New Bundle
 
-Open an issue first so naming, scope, signing-key alignment, and maintenance ownership can be confirmed before code is added. New bundles should use this layout:
+Open an issue first so naming, scope, signing-key alignment, and maintenance ownership can be confirmed before code is added. New bundles must use `format_version: 2`, which requires Pipelock v2.2.0 or later. The existing `pipelock-community` and `healthcare-phi-pii` bundles remain on `format_version: 1` until their bundle content, signatures, served copies, and compatibility checks can migrate together.
+
+Use this header for a new bundle:
+
+```yaml
+format_version: 2
+name: example-community-rules
+version: "2026.08.0"
+author: example-security
+description: "Detection rules for Example Security"
+homepage: "https://example.com/security/rules"
+min_pipelock: "2.2.0"
+license: "Apache-2.0"
+tier: community
+monotonic_version: 1
+published_at: "2026-08-25T00:00:00Z"
+expires_at: "2027-08-25T00:00:00Z"
+required_features:
+  - dlp
+
+rules:
+  # Rule entries follow the format below.
+```
+
+`tier` declares the bundle's trust tier. `required_features` lists the Pipelock engine features that every rule in the bundle needs. Increase `monotonic_version` for each published bundle version so Pipelock can reject rollbacks. Write `published_at` and `expires_at` as UTC RFC 3339 timestamps.
+
+New bundles should use this layout:
 
 ```text
 rules/<bundle-name>/<type>/<rule-file>.yaml
