@@ -12,6 +12,35 @@ Detection rule bundles for [Pipelock](https://github.com/luckyPipewrench/pipeloc
 
 Pipelock ships with built-in DLP, injection, and tool-poison scanners. Rule bundles extend those defaults with additional patterns that ship on a faster cadence than the core binary. Bundles are Ed25519-signed, versioned, and additive (they never override built-in rules).
 
+## Install
+
+Install either official bundle from the Pipelock registry at `https://pipelab.org/rules/`:
+
+```bash
+pipelock rules install pipelock-community
+pipelock rules install healthcare-phi-pii
+```
+
+GitHub Release assets provide an alternate HTTPS source. Repository releases use plain `v*` tags for packaging and repository tooling. Each bundle keeps its own CalVer version, so a repository tag doesn't replace or synchronize bundle versions.
+
+The release workflow prefixes each asset with its bundle name because a GitHub Release can't contain two files named `bundle.yaml`. This example downloads the community bundle, checks both files against `SHA256SUMS`, verifies the detached Ed25519 signature with the repository's pinned public key, and installs from the same release asset URL:
+
+```bash
+curl -fsSLO https://github.com/luckyPipewrench/pipelock-rules/releases/latest/download/pipelock-community-bundle.yaml
+curl -fsSLO https://github.com/luckyPipewrench/pipelock-rules/releases/latest/download/pipelock-community-bundle.yaml.sig
+curl -fsSLO https://github.com/luckyPipewrench/pipelock-rules/releases/latest/download/SHA256SUMS
+grep -E '  \./pipelock-community-bundle\.yaml(\.sig)?$' SHA256SUMS | sha256sum -c -
+
+mkdir -p pipelock-rules-verify/agents/pipelock-official
+curl -fsSLo pipelock-rules-verify/agents/pipelock-official/id_ed25519.pub https://raw.githubusercontent.com/luckyPipewrench/pipelock-rules/main/.github/rules-official/pipelock-official.pub
+printf '%s  %s\n' d63673b9fb7546dd5f223dc8df3b39a51eb8298d914fc602ba75c5d22910dd9f pipelock-rules-verify/agents/pipelock-official/id_ed25519.pub | sha256sum -c -
+pipelock verify pipelock-community-bundle.yaml --sig pipelock-community-bundle.yaml.sig --keystore pipelock-rules-verify --agent pipelock-official
+
+pipelock rules install --source https://github.com/luckyPipewrench/pipelock-rules/releases/latest/download/pipelock-community-bundle.yaml pipelock-community
+```
+
+`--source` accepts an HTTPS URL. For local development bundles, use the separate `--path` form shown below.
+
 ## How Bundles Work
 
 A **rule bundle** is a signed YAML file containing detection rules. Pipelock loads bundles at startup and merges them with its built-in patterns.
@@ -31,20 +60,15 @@ A **rule bundle** is a signed YAML file containing detection rules. Pipelock loa
 Anyone can create a bundle. Security teams build internal bundles for company-specific credentials. Researchers publish bundles for new attack patterns. Each bundle is independently signed and versioned.
 
 ```bash
-# Install the official community bundle
-pipelock rules install pipelock-community
+# Install a third-party bundle from an HTTPS URL
+pipelock rules install --source https://example.com/bundles/acme-rules/bundle.yaml acme-rules
 
-# Install a third-party bundle from a URL
-pipelock rules install --source https://example.com/bundles/acme-rules acme-rules
-
-# Install from a local path (for development)
+# Install from a local path for development
 pipelock rules install --path ./my-bundle/ --allow-unsigned
 
 # List what's installed
 pipelock rules list
 ```
-
-Repository releases use plain `v*` tags for packaging and repository tooling. Each bundle keeps its own CalVer version, so a repository tag doesn't replace or synchronize bundle versions.
 
 ## The Community Bundle
 
@@ -138,9 +162,9 @@ scripts/
 
 ## Learn more
 
-- [What is an Agent Firewall?](https://pipelab.org/agent-firewall/) — how Pipelock scans agent traffic
-- [Community Rules](https://pipelab.org/learn/community-rules/) — install guide and rule documentation
-- [MCP Tool Poisoning](https://pipelab.org/learn/mcp-tool-poisoning/) — why tool-poison rules exist
+- [What is an Agent Firewall?](https://pipelab.org/agent-firewall/): how Pipelock scans agent traffic
+- [Community Rules](https://pipelab.org/learn/community-rules/): install guide and rule documentation
+- [MCP Tool Poisoning](https://pipelab.org/learn/mcp-tool-poisoning/): why tool-poison rules exist
 - [Pipelock on GitHub](https://github.com/luckyPipewrench/pipelock)
 
 ## Contributing
