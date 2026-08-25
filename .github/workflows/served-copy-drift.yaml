@@ -1,0 +1,25 @@
+name: Served bundle drift
+
+on:
+  schedule:
+    - cron: '19 6 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# This scheduled check alerts maintainers when the served copy drifts. It isn't
+# a pull request or release gate, so a failure can't block installs or releases.
+jobs:
+  compare:
+    name: Compare served bundle versions
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Check pipelab.org bundle versions
+        run: scripts/check-served-bundles.sh

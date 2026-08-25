@@ -11,6 +11,10 @@ if [ ! -d "$RULE_ROOT" ]; then
   exit 1
 fi
 
+# The two originally published bundles stay on format 1; the default branch
+# below raises a new bundle to format 2.
+FORMAT_VERSION=1
+
 case "$BUNDLE_NAME" in
   pipelock-community)
     VERSION="2026.07.0"
@@ -27,16 +31,21 @@ case "$BUNDLE_NAME" in
     MIN_PIPELOCK="1.5.0"
     ;;
   *)
+    # A bundle this script does not recognize is a NEW bundle, and
+    # CONTRIBUTING requires new bundles to be format 2 on Pipelock 2.2.0 or
+    # later. The two named bundles above stay on format 1 until their content,
+    # signatures, served copies and compatibility checks migrate together.
     VERSION="${BUNDLE_VERSION:-0.1.0}"
     AUTHOR="${BUNDLE_AUTHOR:-community}"
     DESCRIPTION="${BUNDLE_DESCRIPTION:-Community detection rules for Pipelock}"
     HOMEPAGE="${BUNDLE_HOMEPAGE:-https://github.com/luckyPipewrench/pipelock-rules}"
-    MIN_PIPELOCK="${BUNDLE_MIN_PIPELOCK:-1.4.0}"
+    MIN_PIPELOCK="${BUNDLE_MIN_PIPELOCK:-2.2.0}"
+    FORMAT_VERSION=2
     ;;
 esac
 
 cat <<HEADER
-format_version: 1
+format_version: $FORMAT_VERSION
 name: $BUNDLE_NAME
 version: "$VERSION"
 author: $AUTHOR
