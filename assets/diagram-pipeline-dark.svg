@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="396" viewBox="0 0 1200 396" role="img" aria-label="How a rule reaches an operator: author, compile, prove, validate, then sign and serve">
+  <text x="24" y="34" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" fill="#94a3b8" font-weight="600" letter-spacing="0.15em">FROM A PULL REQUEST TO AN INSTALLED BUNDLE</text>
+  <rect x="24" y="58" width="209.6" height="214" rx="12" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1"/>
+  <text x="42" y="88" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#00e5a0" font-weight="600" letter-spacing="0.15em">1 · AUTHOR</text>
+  <text x="42" y="120" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#e2e8f0" font-weight="600">One rule, one file</text>
+  <path d="M 42 138 L 215.6 138" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1" stroke-linecap="butt" fill="none"/>
+  <text x="42" y="164" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#94a3b8">rules/&lt;type&gt;/rule.yaml</text>
+  <text x="42" y="188" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#94a3b8">+ lines it must match</text>
+  <text x="42" y="212" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#94a3b8">+ lines it must not</text>
+  <text x="42" y="254" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#64748b" font-weight="600">human review</text>
+  <path d="M 241.6 158 L 248.6 165 L 241.6 172" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="259.6" y="58" width="209.6" height="214" rx="12" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1"/>
+  <text x="277.6" y="88" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#00e5a0" font-weight="600" letter-spacing="0.15em">2 · COMPILE</text>
+  <text x="277.6" y="120" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#e2e8f0" font-weight="600">make compile</text>
+  <path d="M 277.6 138 L 451.2 138" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1" stroke-linecap="butt" fill="none"/>
+  <text x="277.6" y="164" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#94a3b8">published/bundle.yaml</text>
+  <text x="277.6" y="188" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#94a3b8">sorted: type, then id</text>
+  <text x="277.6" y="212" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#94a3b8">same bytes on rerun</text>
+  <text x="277.6" y="254" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#00e5a0" font-weight="600">Lint YAML</text>
+  <path d="M 477.2 158 L 484.2 165 L 477.2 172" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="495.2" y="58" width="209.6" height="214" rx="12" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1"/>
+  <text x="513.2" y="88" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#00e5a0" font-weight="600" letter-spacing="0.15em">3 · PROVE</text>
+  <text x="513.2" y="120" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#e2e8f0" font-weight="600">make test-fixtures</text>
+  <path d="M 513.2 138 L 686.8 138" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1" stroke-linecap="butt" fill="none"/>
+  <text x="513.2" y="164" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#94a3b8">576 assertions run</text>
+  <text x="513.2" y="188" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#94a3b8">positives must match</text>
+  <text x="513.2" y="212" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#94a3b8">negatives must not</text>
+  <text x="513.2" y="254" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#00e5a0" font-weight="600">Test fixtures</text>
+  <path d="M 712.8 158 L 719.8 165 L 712.8 172" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="730.8" y="58" width="209.6" height="214" rx="12" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1"/>
+  <text x="748.8" y="88" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#00e5a0" font-weight="600" letter-spacing="0.15em">4 · VALIDATE</text>
+  <text x="748.8" y="120" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#e2e8f0" font-weight="600">make validate</text>
+  <path d="M 748.8 138 L 922.4 138" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1" stroke-linecap="butt" fill="none"/>
+  <text x="748.8" y="164" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#94a3b8">schema on v3.4.0</text>
+  <text x="748.8" y="188" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#94a3b8">and on each bundle's</text>
+  <text x="748.8" y="212" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#94a3b8">floor: v1.4.0 · v1.5.0</text>
+  <text x="748.8" y="254" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#00e5a0" font-weight="600">Validate bundle</text>
+  <path d="M 948.4 158 L 955.4 165 L 948.4 172" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="966.4" y="58" width="209.6" height="214" rx="12" fill="#00e5a0" fill-opacity="0.12" stroke="#00e5a0" stroke-opacity="0.35" stroke-width="1"/>
+  <text x="984.4" y="88" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#00e5a0" font-weight="600" letter-spacing="0.15em">5 · SIGN &amp; SERVE</text>
+  <text x="984.4" y="120" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="15" fill="#e2e8f0" font-weight="600">Sign, then install</text>
+  <path d="M 984.4 138 L 1158 138" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1" stroke-linecap="butt" fill="none"/>
+  <text x="984.4" y="164" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#94a3b8">Ed25519 detached sig</text>
+  <text x="984.4" y="188" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#94a3b8">rules install &lt;name&gt;</text>
+  <text x="984.4" y="212" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11.5" fill="#94a3b8">writes bundle.lock</text>
+  <text x="984.4" y="240" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#00e5a0" font-weight="600">Verify published</text>
+  <text x="984.4" y="254" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10.5" fill="#00e5a0" font-weight="600">signatures</text>
+  <path d="M 24 316 L 1176 316" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1" stroke-linecap="butt" fill="none"/>
+  <text x="24" y="346" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#64748b">Every gate below the stage runs on every pull request. A rule that skips one cannot reach a published bundle.</text>
+  <text x="24" y="370" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#64748b">Bundles are additive: they extend Pipelock's built-in scanners and never override them.</text>
+</svg>

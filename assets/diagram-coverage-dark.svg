@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="422" viewBox="0 0 1200 422" role="img" aria-label="Rule coverage by bundle, type and status">
+  <text x="24" y="34" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" fill="#94a3b8" font-weight="600" letter-spacing="0.15em">WHAT IS IN EACH BUNDLE</text>
+  <rect x="24" y="58" width="564" height="258" rx="12" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1"/>
+  <text x="44" y="92" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" fill="#e2e8f0" font-weight="700">pipelock-community</text>
+  <text x="568" y="92" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#00e5a0" font-weight="600" text-anchor="end">2026.07.0</text>
+  <text x="44" y="114" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" fill="#64748b">format 1  ·  needs Pipelock 1.4.0 or newer</text>
+  <path d="M 44 130 L 568 130" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1" stroke-linecap="butt" fill="none"/>
+  <text x="44" y="167" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#94a3b8">dlp</text>
+  <rect x="152" y="153" width="92" height="20" rx="4" fill="#00e5a0" data-bundle="pipelock-community" data-type="dlp" data-stable="7"/>
+  <rect x="247" y="153" width="49.57" height="20" rx="4" fill="none" stroke="#00e5a0" stroke-opacity="0.35" stroke-width="1.4"/>
+  <text x="568" y="167" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#e2e8f0" font-weight="600" text-anchor="end">11</text>
+  <text x="44" y="209" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#94a3b8">injection</text>
+  <rect x="152" y="195" width="78.86" height="20" rx="4" fill="#00e5a0" data-bundle="pipelock-community" data-type="injection" data-stable="6"/>
+  <rect x="233.86" y="195" width="49.57" height="20" rx="4" fill="none" stroke="#00e5a0" stroke-opacity="0.35" stroke-width="1.4"/>
+  <text x="568" y="209" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#e2e8f0" font-weight="600" text-anchor="end">10</text>
+  <text x="44" y="251" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#94a3b8">tool-poison</text>
+  <rect x="152" y="237" width="65.71" height="20" rx="4" fill="#00e5a0" data-bundle="pipelock-community" data-type="tool-poison" data-stable="5"/>
+  <rect x="220.71" y="237" width="23.29" height="20" rx="4" fill="none" stroke="#00e5a0" stroke-opacity="0.35" stroke-width="1.4"/>
+  <text x="568" y="251" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#e2e8f0" font-weight="600" text-anchor="end">7</text>
+  <path d="M 44 272 L 568 272" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1" stroke-linecap="butt" fill="none"/>
+  <text x="44" y="296" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#94a3b8">28 rules  ·  18 stable  ·  10 experimental</text>
+  <rect x="612" y="58" width="564" height="258" rx="12" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1"/>
+  <text x="632" y="92" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="17" fill="#e2e8f0" font-weight="700">healthcare-phi-pii</text>
+  <text x="1156" y="92" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#00e5a0" font-weight="600" text-anchor="end">2026.05.1</text>
+  <text x="632" y="114" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" fill="#64748b">format 1  ·  needs Pipelock 1.5.0 or newer</text>
+  <path d="M 632 130 L 1156 130" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1" stroke-linecap="butt" fill="none"/>
+  <text x="632" y="167" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#94a3b8">dlp</text>
+  <rect x="740" y="153" width="341.71" height="20" rx="4" fill="#00e5a0" data-bundle="healthcare-phi-pii" data-type="dlp" data-stable="26"/>
+  <rect x="1084.71" y="153" width="23.29" height="20" rx="4" fill="none" stroke="#00e5a0" stroke-opacity="0.35" stroke-width="1.4"/>
+  <text x="1156" y="167" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#e2e8f0" font-weight="600" text-anchor="end">28</text>
+  <text x="632" y="209" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#94a3b8">injection</text>
+  <path d="M 740 203 L 766 203" stroke="#ffffff" stroke-opacity="0.18" stroke-width="1" stroke-linecap="butt" fill="none"/>
+  <text x="1156" y="209" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#64748b" text-anchor="end">0</text>
+  <text x="632" y="251" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#94a3b8">tool-poison</text>
+  <path d="M 740 245 L 766 245" stroke="#ffffff" stroke-opacity="0.18" stroke-width="1" stroke-linecap="butt" fill="none"/>
+  <text x="1156" y="251" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="13" fill="#64748b" text-anchor="end">0</text>
+  <path d="M 632 272 L 1156 272" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1" stroke-linecap="butt" fill="none"/>
+  <text x="632" y="296" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#94a3b8">28 rules  ·  26 stable  ·  2 experimental</text>
+  <rect x="24" y="379" width="22" height="14" rx="3" fill="#00e5a0"/>
+  <text x="54" y="390" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#64748b">stable  ·  cited, fixtures in both directions, on by default</text>
+  <rect x="612" y="379" width="22" height="14" rx="3" fill="none" stroke="#00e5a0" stroke-opacity="0.35" stroke-width="1.4"/>
+  <text x="642" y="390" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#64748b">experimental  ·  true-positive fixtures only, off unless you opt in</text>
+</svg>
