@@ -20,6 +20,7 @@ longer matches, or when the mark stops meeting the brand rules.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import math
 import re
 import sys
@@ -261,20 +262,67 @@ def build() -> dict:
     return {ASSET_DIR / name: render() for name, render in ASSETS.items()}
 
 
+# A flat mark is built from these and nothing else. Allowing a shape is a
+# deliberate act; anything absent from this set is refused, so a construct
+# nobody anticipated fails closed instead of passing unnoticed.
+MARK_ELEMENTS = {"svg", "g", "path", "circle", "ellipse", "rect", "polygon",
+                 "polyline", "line", "title", "desc", "metadata"}
+
+# Attributes that carry paint. A flat mark states a literal colour or none.
+PAINT_ATTRS = ("fill", "stroke", "color", "stop-color", "flood-color")
+
+
+def _mark_policy_problems(inner: str) -> list:
+    """Structural check of the master mark: allowed shapes, literal paint only."""
+    from xml.etree import ElementTree
+
+    problems = []
+    try:
+        root = ElementTree.fromstring(f'<svg xmlns="http://www.w3.org/2000/svg">{inner}</svg>')
+    except ElementTree.ParseError as error:
+        return [f"mark.svg: does not parse as XML ({error}); it cannot be checked"]
+
+    literal_fills = set()
+    for node in root.iter():
+        tag = node.tag.split("}")[-1]
+        if tag not in MARK_ELEMENTS:
+            problems.append(
+                f"mark.svg: uses <{tag}>, which a flat single-colour mark does not need; "
+                "add it to MARK_ELEMENTS deliberately if that is wrong")
+            continue
+        for attr in PAINT_ATTRS:
+            value = (node.get(attr) or "").strip()
+            if not value or value.lower() in {"none", "currentcolor", "inherit"}:
+                continue
+            if value.lower().startswith("url("):
+                problems.append(
+                    f"mark.svg: {attr} references {value}, so its colour comes from a "
+                    "gradient, pattern or other paint server rather than the brand accent")
+                continue
+            if not re.fullmatch(r"#[0-9a-fA-F]{6}", value):
+                problems.append(f"mark.svg: {attr}={value!r} is not a six-digit hex colour")
+                continue
+            literal_fills.add(value.lower())
+        # A mask or clip reference hides geometry from the paint check above.
+        for attr in ("mask", "clip-path", "filter", "style"):
+            if node.get(attr):
+                problems.append(
+                    f"mark.svg: carries {attr}, which can change what is drawn or painted "
+                    "without changing any fill this check reads")
+
+    if not literal_fills:
+        problems.append("mark.svg: no explicit fill; the colour gate would prove nothing")
+    for fill in sorted(literal_fills):
+        if fill != ACCENT:
+            problems.append(f"mark.svg: paints {fill}, but the mark is single-colour {ACCENT}")
+    return problems
+
+
 def brand_problems() -> list:
     """Report a master mark that no longer follows the brand rules."""
     problems = []
     _, inner = mark_parts()
-
-    fills = set(re.findall(r'fill="(#[0-9a-fA-F]{6})"', inner))
-    if not fills:
-        problems.append("mark.svg: no explicit fill; the colour gate would prove nothing")
-    for fill in sorted(fills):
-        if fill.lower() != ACCENT:
-            problems.append(f"mark.svg: paints {fill}, but the mark is single-colour {ACCENT}")
-
-    if re.search(r"<(image|filter|feGaussianBlur)\b", inner):
-        problems.append("mark.svg: embeds a raster or a filter; the master must be plain vector")
+    problems += _mark_policy_problems(inner)
 
     text = MARK.read_text(encoding="utf-8")
     if 'width=' in text.split(">", 1)[0]:
@@ -299,12 +347,55 @@ def brand_problems() -> list:
     return problems
 
 
+def sidecar(png: str) -> Path:
+    """Where the digest of the SVG a raster was exported from is recorded."""
+    return ASSET_DIR / f"{png}.source"
+
+
+def raster_problems() -> list[str]:
+    """Rasters that are missing, or that came from an older vector.
+
+    Existence is not provenance. A PNG left over from a previous mark sits on
+    disk looking exactly like a current one, so the check compares the digest
+    recorded at export time against the vector as it stands now. Inkscape is
+    not always present, which is why export is a separate step and this reads
+    the recorded digest rather than re-rasterising to compare.
+    """
+    problems = []
+    for png, (svg, _) in PNG_EXPORTS.items():
+        raster = ASSET_DIR / png
+        if not raster.exists():
+            problems.append(f"assets/{png}: missing; run 'make brand'")
+            continue
+        note = sidecar(png)
+        if not note.exists():
+            problems.append(
+                f"assets/{png}: no record of the vector it came from; "
+                "run 'make brand'")
+            continue
+        want = hashlib.sha256((ASSET_DIR / svg).read_bytes()).hexdigest()
+        if note.read_text(encoding="utf-8").strip() != want:
+            problems.append(
+                f"assets/{png}: exported from an older assets/{svg}; "
+                "re-export it and run 'make brand'")
+    return problems
+
+
 def main() -> int:
     """Write the brand assets, or with --check compare without writing."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true",
                         help="compare committed assets without writing")
+    parser.add_argument("--stamp-png", action="store_true",
+                        help="record the SVG digest each exported raster was made from")
     args = parser.parse_args()
+
+    if args.stamp_png:
+        for png, (svg, _) in PNG_EXPORTS.items():
+            digest = hashlib.sha256((ASSET_DIR / svg).read_bytes()).hexdigest()
+            sidecar(png).write_text(digest + "\n", encoding="utf-8")
+            print(f"stamped assets/{png}.source")
+        return 0
 
     problems = brand_problems()
     files = build()
@@ -316,9 +407,7 @@ def main() -> int:
                 problems.append(f"{relative}: missing; run 'make brand'")
             elif path.read_text(encoding="utf-8") != content:
                 problems.append(f"{relative}: stale; run 'make brand'")
-        for png, (svg, _) in PNG_EXPORTS.items():
-            if not (ASSET_DIR / png).exists():
-                problems.append(f"assets/{png}: missing; run 'make brand'")
+        problems += raster_problems()
         if problems:
             print("check-brand: FAIL", file=sys.stderr)
             for problem in problems:

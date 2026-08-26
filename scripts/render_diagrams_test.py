@@ -555,6 +555,9 @@ class CommittedAssetTest(unittest.TestCase):
         expected = {path.name for path in generator.build()}
         expected |= {path.name for path in brand.build()}
         expected |= set(brand.PNG_EXPORTS)
+        # Each raster records the vector it was exported from, so check-brand can
+        # tell a current PNG from one left over by an earlier mark.
+        expected |= {f"{png}.source" for png in brand.PNG_EXPORTS}
         expected.add(brand.MARK.name)          # the committed master
         on_disk = {path.name for path in generator.ASSET_DIR.iterdir()}
         self.assertEqual(on_disk - expected, set())
