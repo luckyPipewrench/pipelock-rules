@@ -20,6 +20,8 @@ import re
 import tempfile
 import unittest
 
+import yaml
+
 # Every document parsed here is a string this same module just generated from a
 # literal template, so the stdlib parser never sees an untrusted document and
 # the repository keeps its stdlib-only tooling rule.
@@ -164,6 +166,21 @@ class WellFormedTest(unittest.TestCase):
                 self.assertTrue(colors <= approved, colors - approved)
 
 
+def _regex_values(node) -> list:
+    """Every string under a key named regex, at any depth."""
+    if isinstance(node, dict):
+        found = []
+        for key, value in node.items():
+            if key == "regex" and isinstance(value, str):
+                found.append(value)
+            else:
+                found += _regex_values(value)
+        return found
+    if isinstance(node, list):
+        return [value for item in node for value in _regex_values(item)]
+    return []
+
+
 class PatternSecrecyTest(unittest.TestCase):
     """No asset may carry a live detection pattern.
 
@@ -175,23 +192,58 @@ class PatternSecrecyTest(unittest.TestCase):
     """
 
     def _every_regex(self) -> list:
+        """Every rule pattern in the corpus, read with a YAML parser.
+
+        The previous version searched the source text for `regex: \'...\'` at a
+        fixed indent. That matches how every rule happens to be written today,
+        which is exactly why it was risky: a double-quoted or block-scalar
+        pattern would be skipped silently and the check would go partial without
+        reporting anything. Parsing sees a pattern however it is quoted.
+        """
         found = []
         for bundle in generator.BUNDLES:
-            for rule in generator.bundle_rules(bundle):
-                match = generator.REGEX_FIELD.search(rule["block"])
-                if match:
-                    found.append((rule["id"], match.group(1)))
+            document = yaml.safe_load(
+                (generator.PUBLISHED_DIR / bundle / "bundle.yaml").read_text(encoding="utf-8"))
+            for rule in document.get("rules") or []:
+                # Walk the rule rather than reaching for a known key. The regex
+                # sits at rules[].pattern.regex, and the first version of this
+                # rewrite assumed rules[].regex and collected nothing. A gate
+                # that silently finds nothing is the failure mode being guarded
+                # against, so it takes every regex field wherever it is nested.
+                found += [(rule.get("id", "<unidentified>"), value)
+                          for value in _regex_values(rule)]
         return found
+
+    def _every_committed_surface(self) -> dict:
+        """Everything both generators write, as text and as rendered text.
+
+        Two reasons this is wider than it looks. The brand vectors live in the
+        same repository and are read by the same scan, so leaving them out meant
+        the gate covered some of what it was protecting. And an SVG stores `<`
+        as `&lt;`, so a pattern can be absent from the raw bytes and present in
+        what a parser hands back: both views are checked.
+        """
+        surfaces = {}
+        for path, content in list(generator.build().items()) + list(brand.build().items()):
+            surfaces[path.name] = content
+            if path.suffix == ".svg":
+                try:
+                    root = ElementTree.fromstring(content)
+                except ElementTree.ParseError:
+                    continue
+                surfaces[f"{path.name} (decoded text)"] = "".join(root.itertext())
+        return surfaces
 
     def test_the_scan_finds_patterns_to_check(self):
         # Otherwise every assertion below is vacuously true.
         self.assertGreaterEqual(len(self._every_regex()), 50)
 
     def test_no_generated_asset_contains_any_rule_pattern(self):
-        assets = generator.build()
+        surfaces = self._every_committed_surface()
+        self.assertTrue(surfaces, "no surfaces collected; the check would prove nothing")
         for identifier, pattern in self._every_regex():
-            for path, content in assets.items():
-                with self.subTest(rule=identifier, asset=path.name):
+            for name, content in surfaces.items():
+                with self.subTest(rule=identifier, asset=name):
                     self.assertNotIn(pattern, content)
 
     def test_no_asset_emits_a_long_run_of_digits(self):
