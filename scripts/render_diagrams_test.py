@@ -33,6 +33,14 @@ assert spec and spec.loader
 generator = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(generator)
 
+# The brand generator writes into the same assets/ directory, so the orphan
+# check has to ask it what it owns rather than assume anything unclaimed is junk.
+BRAND_SCRIPT = SCRIPT.parent / "render_brand.py"
+_brand_spec = importlib.util.spec_from_file_location("render_brand", BRAND_SCRIPT)
+assert _brand_spec and _brand_spec.loader
+brand = importlib.util.module_from_spec(_brand_spec)
+_brand_spec.loader.exec_module(brand)
+
 SVG = "{http://www.w3.org/2000/svg}"
 
 
@@ -538,8 +546,16 @@ class CommittedAssetTest(unittest.TestCase):
         self.assertEqual(stale, [], "run scripts/render_diagrams.py")
 
     def test_no_orphaned_generated_asset_remains(self):
-        # A retired drawing left on disk keeps rendering somewhere forever.
+        """Nothing sits in assets/ that no generator claims.
+
+        A retired drawing left on disk keeps rendering somewhere forever. Two
+        generators write here now, so this asks both rather than being widened
+        to tolerate whatever it finds: an unclaimed file is still a defect.
+        """
         expected = {path.name for path in generator.build()}
+        expected |= {path.name for path in brand.build()}
+        expected |= set(brand.PNG_EXPORTS)
+        expected.add(brand.MARK.name)          # the committed master
         on_disk = {path.name for path in generator.ASSET_DIR.iterdir()}
         self.assertEqual(on_disk - expected, set())
 
