@@ -171,16 +171,43 @@ def lockup() -> str:
     reads off-balance however it is aligned, which is the exact defect the
     sibling benchmark repository's header had.
     """
-    w, h = 640, 132
+    w, h = 620, 116
     out = _open(w, h, f"{WORDMARK} logo lockup")
-    out.append(placed_mark(24, 18, 96))
+    out.append(placed_mark(20, 10, 96))
     # Two-tone wordmark. The accent lands on the word that distinguishes
     # this project from its parent, matching 'Agent Egress Bench' next door.
-    out.append(f'  <text x="148" y="74" font-family="{MONO}" font-size="44" '
+    out.append(f'  <text x="140" y="74" font-family="{MONO}" font-size="46" '
                f'font-weight="700" letter-spacing="-0.02em" xml:space="preserve">'
                f'<tspan fill="{TEXT}">pipelock-</tspan>'
                f'<tspan fill="{ACCENT}">rules</tspan></text>')
-    out.append(_text(150, 102, TAGLINE, fill=DIM, size=15))
+    # No tagline. A lockup is a mark and a wordmark; a page that uses it as a
+    # header states the tagline in text directly beneath, and a lockup carrying
+    # its own copy made the header say it twice.
+    out.append("</svg>")
+    return "\n".join(out) + "\n"
+
+
+def lockup_stacked() -> str:
+    """Mark above, wordmark below, for square and centred placements.
+
+    The one-line lockup is the default and belongs anywhere wide: a README
+    header, a slide, a card. This one exists for the places a wide lockup
+    cannot go -- an avatar, an app icon, a centred hero -- where a horizontal
+    lockup has to shrink until the wordmark is unreadable.
+
+    The rule against stacking still holds where it was aimed: it forbids
+    breaking the WORDMARK across two lines beside a mark. Here the wordmark
+    stays on one line and the mark sits above it, which is the form Pipelock's
+    own logo already takes.
+    """
+    w, h = 420, 252
+    out = _open(w, h, f"{WORDMARK} stacked logo")
+    out.append(placed_mark((w - 132) / 2, 26, 132))
+    out.append(f'  <text x="{w / 2}" y="222" font-family="{MONO}" font-size="42" '
+               f'font-weight="700" letter-spacing="-0.02em" text-anchor="middle" '
+               f'xml:space="preserve">'
+               f'<tspan fill="{TEXT}">pipelock-</tspan>'
+               f'<tspan fill="{ACCENT}">rules</tspan></text>')
     out.append("</svg>")
     return "\n".join(out) + "\n"
 
@@ -217,23 +244,28 @@ def social_preview() -> str:
     # a card that bleeds to the edge it reads as a stray browser chrome line
     # rather than as brand.
 
-    out.append(placed_mark(120, 196, 248))
+    out.append(placed_mark(112, 188, 264))
 
+    # Scale, not weight. This and the lockup have always used the same font at
+    # 700; the lockup simply gave its wordmark a third of the frame height while
+    # the card gave it a tenth, so the lockup read as the bolder of the two. At
+    # 86 the name carries the card the way it carries the lockup.
+    #
     # Accent lands on the word that distinguishes THIS project, which is the
     # rule the sibling repositories follow: "Agent Egress Bench", "pipelock-rules".
-    out.append(f'  <text x="440" y="292" font-family="{MONO}" font-size="66" '
-               f'font-weight="700" letter-spacing="-0.02em" xml:space="preserve">'
+    out.append(f'  <text x="452" y="300" font-family="{MONO}" font-size="86" '
+               f'font-weight="700" letter-spacing="-0.025em" xml:space="preserve">'
                f'<tspan fill="{TEXT}">pipelock-</tspan>'
                f'<tspan fill="{ACCENT}">rules</tspan></text>')
-    out.append(_text(444, 340, TAGLINE, fill=MUTED, size=25))
+    out.append(_text(456, 352, TAGLINE, fill=MUTED, size=25))
 
-    chip_x = 444
+    chip_x = 456
     for label in ("dlp", "injection", "tool-poison"):
         width = 34 + len(label) * 15
-        out.append(f'  <rect x="{chip_x}" y="384" width="{width}" height="46" rx="23" '
+        out.append(f'  <rect x="{chip_x}" y="398" width="{width}" height="46" rx="23" '
                    f'fill="{ACCENT}" fill-opacity="0.10" stroke="{ACCENT}" '
                    f'stroke-opacity="0.34"/>')
-        out.append(_text(chip_x + width / 2, 414, label, fill=ACCENT, size=17,
+        out.append(_text(chip_x + width / 2, 428, label, fill=ACCENT, size=17,
                          family=MONO, weight=600, anchor="middle"))
         chip_x += width + 16
 
@@ -247,6 +279,7 @@ ASSETS = {
     "pipelock-rules-logo.svg": logo,
     "pipelock-rules-favicon.svg": favicon,
     "pipelock-rules-lockup.svg": lockup,
+    "pipelock-rules-lockup-stacked.svg": lockup_stacked,
     "social-preview.svg": social_preview,
 }
 
@@ -335,8 +368,13 @@ def brand_problems() -> list:
     # the first time impossible. Presence is a --check concern.
 
     readme = (REPO_ROOT / "README.md").read_text(encoding="utf-8")
-    if "assets/pipelock-rules-logo.svg" not in readme:
-        problems.append("README: does not show the logo, so the mark exists but nobody sees it")
+    # The social card is generated too, but it is a link preview, not a header,
+    # so showing it would not put the mark on the front page.
+    header_vectors = sorted(set(ASSETS) - {"social-preview.svg"})
+    if not any(f"assets/{name}" in readme for name in header_vectors):
+        problems.append(
+            "README: shows none of " + ", ".join(header_vectors)
+            + ", so the mark exists but nobody sees it")
 
     # A badge for a workflow that was renamed or deleted renders as a broken
     # image on the front page, which reads worse than having no badge.

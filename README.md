@@ -1,8 +1,6 @@
 <p align="center">
-  <img src="assets/pipelock-rules-logo.svg" alt="" width="132">
+  <img src="assets/pipelock-rules-lockup.svg" alt="pipelock-rules" width="420">
 </p>
-
-<h1 align="center">pipelock-rules</h1>
 
 <p align="center">
   Signed, versioned detection rules for <a href="https://github.com/luckyPipewrench/pipelock">Pipelock</a>, the open-source agent firewall.
