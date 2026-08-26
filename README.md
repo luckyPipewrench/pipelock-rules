@@ -163,7 +163,7 @@ make validate
 # Run every regex against its true and false positive fixtures
 make test-fixtures
 
-# Re-render the README diagrams from the live bundles
+# Re-render the README diagrams and the rule catalog from the live bundles
 make diagrams
 
 # Everything CI runs locally, for every published bundle
@@ -174,7 +174,7 @@ make preflight
 
 ### Repository layout
 
-```
+```text
 rules/<bundle>/<type>/       One YAML file per rule
 fixtures/<bundle>/<type>/    Lines that must match, and lines that must not
 published/<bundle>/          The compiled bundle.yaml and its detached .sig

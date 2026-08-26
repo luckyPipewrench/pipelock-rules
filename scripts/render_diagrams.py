@@ -153,10 +153,12 @@ HEADER_FIELD = re.compile(r'^(format_version|name|version|author|min_pipelock): 
 
 
 def _fail(message: str):
+    """Abort with a message the operator can act on, not a traceback."""
     raise SystemExit("render_diagrams: FAIL - " + message)
 
 
 def _published(bundle: str) -> str:
+    """The compiled bundle text, or a failure naming the command that writes it."""
     path = PUBLISHED_DIR / bundle / "bundle.yaml"
     if not path.is_file():
         _fail(f"{path.relative_to(REPO_ROOT)} is missing; run 'BUNDLE_NAME={bundle} make compile'")
@@ -214,6 +216,7 @@ def source_rule_ids(bundle: str) -> set:
 
 
 def _assertion_lines(path: Path) -> int:
+    """Non-empty lines in a fixture file. Every one of them is a test."""
     if not path.is_file():
         return 0
     return sum(1 for line in path.read_text(encoding="utf-8").splitlines() if line.strip())
@@ -333,6 +336,7 @@ def _paint(attribute: str, value: str) -> str:
 
 
 def _esc(text: str) -> str:
+    """Escape text for an SVG text node."""
     return (text.replace("&", "&amp;").replace("<", "&lt;")
             .replace(">", "&gt;").replace('"', "&quot;"))
 
@@ -361,6 +365,7 @@ def _eyebrow(x, y, content, *, fill, size=10, anchor="start"):
 
 
 def _card(x, y, w, h, *, fill, stroke, width=1, radius=12, dash=None, extra=""):
+    """A rounded panel: the base surface every diagram is built on."""
     tail = f' stroke-dasharray="{dash}"' if dash else ""
     return (f'  <rect x="{_n(x)}" y="{_n(y)}" width="{_n(w)}" height="{_n(h)}" rx="{radius}" '
             f'{_paint("fill", fill)} {_paint("stroke", stroke)} '
@@ -375,6 +380,7 @@ def _bar(x, y, w, h, *, fill, opacity=None, radius=4, extra=""):
 
 
 def _outline_bar(x, y, w, h, *, stroke, width=1.4, radius=4, extra=""):
+    """An unfilled measure, for the experimental half of a coverage bar."""
     return (f'  <rect x="{_n(x)}" y="{_n(y)}" width="{_n(w)}" height="{_n(h)}" rx="{radius}" '
             f'fill="none" {_paint("stroke", stroke)} stroke-width="{_n(width)}"{extra}/>')
 
@@ -408,12 +414,14 @@ def _tick(x, y, color, size=5, width=2):
 
 
 def _cross(x, y, color, size=4.5, width=2):
+    """An X, drawn as a path for the same reason as the tick."""
     return (f'  <path d="M {_n(x - size)} {_n(y - size)} L {_n(x + size)} {_n(y + size)} '
             f'M {_n(x + size)} {_n(y - size)} L {_n(x - size)} {_n(y + size)}" fill="none" '
             f'{_paint("stroke", color)} stroke-width="{_n(width)}" stroke-linecap="round"/>')
 
 
 def _svg_open(w, h, label, p):
+    """Open an SVG with the accessible label screen readers announce."""
     out = [f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" '
            f'viewBox="0 0 {w} {h}" role="img" aria-label="{_esc(label)}">']
     if p["canvas"] != "none":
@@ -427,10 +435,12 @@ def _svg_open(w, h, label, p):
 
 
 def _all_rules() -> list:
+    """Every rule in every published bundle, flattened."""
     return [rule for bundle in BUNDLES for rule in bundle_rules(bundle)]
 
 
 def stats_strip(p) -> str:
+    """The headline tiles under the README intro."""
     rules = _all_rules()
     tiles = [
         (str(len(rules)), "detection rules"),
@@ -530,6 +540,7 @@ def _wrap(text: str, limit: int) -> list:
 
 
 def pipeline(p) -> str:
+    """The five stages a rule passes before an operator can install it."""
     stages = pipeline_stages()
     w, h = 1200, 396
     out = _svg_open(w, h, "How a rule reaches an operator: author, compile, prove, "
@@ -709,6 +720,7 @@ def anatomy_rule() -> dict:
 
 
 def regex_of(rule: dict) -> str:
+    """The rule's pattern text. Read for measurement only, never painted."""
     match = REGEX_FIELD.search(rule["block"])
     if not match:
         _fail(f"anatomy: rule {rule['id']!r} declares no single-quoted regex")
@@ -736,6 +748,7 @@ def regex_shape(rule: dict) -> list:
 
 
 def anatomy(p) -> str:
+    """One real rule taken apart: declaration, pattern shape, fixtures."""
     rule = anatomy_rule()
     w, h = 1200, 412
     out = _svg_open(w, h, f"Anatomy of the {rule['id']} rule: its declaration, the shape of "
@@ -833,6 +846,7 @@ def anatomy(p) -> str:
 
 
 def trust(p) -> str:
+    """Sign, verify against the pinned key, pin again at install."""
     w, h = 1200, 328
     digest = official_key_digest()
     out = _svg_open(w, h, "The trust chain: a bundle is signed with Ed25519, verified "
@@ -1091,6 +1105,7 @@ def verify_against_corpus() -> list:
 
 
 def build() -> dict:
+    """Every generated file, as a path to its full intended content."""
     files = {CATALOG: rule_catalog()}
     for name, render in DIAGRAMS.items():
         for theme, palette in PALETTES.items():
@@ -1112,6 +1127,7 @@ def svg_assets() -> dict:
 
 
 def main() -> int:
+    """Write the assets, or with --check compare them without writing."""
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--check", action="store_true",
                         help="compare committed assets without writing")

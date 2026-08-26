@@ -308,10 +308,36 @@ class BundleAgreementTest(unittest.TestCase):
         self.assertTrue(any("pinned key digest" in p for p in problems), problems)
 
     def test_a_readme_that_pins_two_digests_pins_neither(self):
-        # Two 64-hex strings leave a reader unable to tell which belongs to the
-        # key, so the producer reports no pin rather than guessing.
-        with _swap("README", generator.REPO_ROOT / "scripts" / "render_diagrams_test.py"):
-            self.assertIsNone(generator.readme_key_digest())
+        """Two digests leave a reader unable to tell which belongs to the key.
+
+        The fixture writes both digests out rather than pointing at a file that
+        happens to contain some. An earlier version swapped in this test module
+        on the assumption it held two, and it holds none, so the test passed by
+        exercising the no-digest branch instead of the one it is named for.
+        """
+        first, second = "a" * 64, "b" * 64
+        with tempfile.TemporaryDirectory() as directory:
+            readme = Path(directory) / "README.md"
+            readme.write_text(f"pin {first} and also {second}\n", encoding="utf-8")
+            with _swap("README", readme):
+                self.assertIsNone(generator.readme_key_digest())
+
+    def test_a_readme_that_pins_exactly_one_digest_returns_it(self):
+        """The other side of the same branch, so neither direction is assumed."""
+        only = "c" * 64
+        with tempfile.TemporaryDirectory() as directory:
+            readme = Path(directory) / "README.md"
+            readme.write_text(f"pin {only}\n", encoding="utf-8")
+            with _swap("README", readme):
+                self.assertEqual(generator.readme_key_digest(), only)
+
+    def test_a_readme_with_no_digest_pins_nothing(self):
+        """And the zero case, which is what the two-digest test used to cover."""
+        with tempfile.TemporaryDirectory() as directory:
+            readme = Path(directory) / "README.md"
+            readme.write_text("no digest here\n", encoding="utf-8")
+            with _swap("README", readme):
+                self.assertIsNone(generator.readme_key_digest())
 
     def test_a_renamed_ci_check_is_reported(self):
         with _swap("ci_check_names", lambda: {"Some other job"}):
@@ -363,8 +389,15 @@ class BundleAgreementTest(unittest.TestCase):
         self.assertTrue(set(generator.BUNDLES) <= generator.makefile_preflight_bundles())
 
     def test_a_readme_that_stops_linking_the_catalog_is_reported(self):
-        with _swap("README", generator.REPO_ROOT / "CONTRIBUTING.md"):
-            problems = generator.verify_against_corpus()
+        # Written for the purpose rather than borrowed from the repository. An
+        # earlier version swapped in CONTRIBUTING.md, which then gained a link
+        # to the catalog, and the test stopped exercising the missing-link case
+        # without anything failing to say so.
+        with tempfile.TemporaryDirectory() as directory:
+            readme = Path(directory) / "README.md"
+            readme.write_text("A README that links no catalog.\n", encoding="utf-8")
+            with _swap("README", readme):
+                problems = generator.verify_against_corpus()
         self.assertTrue(any("generated catalog is unreachable" in p for p in problems), problems)
 
     def test_a_readme_naming_a_provider_no_rule_detects_is_reported(self):
