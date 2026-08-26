@@ -15,3 +15,5 @@ Thumbs.db
 
 # Temporary validation
 /tmp-validate/
+__pycache__/
+*.pyc

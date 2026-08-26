@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="128" viewBox="0 0 1200 128" role="img" aria-label="56 detection rules; 2 signed bundles; 576 fixture assertions; 44 stable, cited rules">
+  <rect x="24" y="16" width="276" height="96" rx="12" fill="#09090b" fill-opacity="0.03" stroke="#09090b" stroke-opacity="0.12" stroke-width="1"/>
+  <text x="162" y="72" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="40" fill="#008f66" font-weight="700" text-anchor="middle">56</text>
+  <text x="162" y="98" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#64748b" font-weight="600" text-anchor="middle" letter-spacing="0.15em">DETECTION RULES</text>
+  <rect x="316" y="16" width="276" height="96" rx="12" fill="#09090b" fill-opacity="0.03" stroke="#09090b" stroke-opacity="0.12" stroke-width="1"/>
+  <text x="454" y="72" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="40" fill="#008f66" font-weight="700" text-anchor="middle">2</text>
+  <text x="454" y="98" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#64748b" font-weight="600" text-anchor="middle" letter-spacing="0.15em">SIGNED BUNDLES</text>
+  <rect x="608" y="16" width="276" height="96" rx="12" fill="#09090b" fill-opacity="0.03" stroke="#09090b" stroke-opacity="0.12" stroke-width="1"/>
+  <text x="746" y="72" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="40" fill="#008f66" font-weight="700" text-anchor="middle">576</text>
+  <text x="746" y="98" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#64748b" font-weight="600" text-anchor="middle" letter-spacing="0.15em">FIXTURE ASSERTIONS</text>
+  <rect x="900" y="16" width="276" height="96" rx="12" fill="#09090b" fill-opacity="0.03" stroke="#09090b" stroke-opacity="0.12" stroke-width="1"/>
+  <text x="1038" y="72" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="40" fill="#008f66" font-weight="700" text-anchor="middle">44</text>
+  <text x="1038" y="98" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#64748b" font-weight="600" text-anchor="middle" letter-spacing="0.15em">STABLE, CITED RULES</text>
+</svg>

@@ -32,7 +32,15 @@ Rules are welcome via pull request. Each rule must meet the quality bar below be
    BUNDLE_NAME=<bundle-name> make validate
    ```
 
-5. Submit a PR.
+5. Re-render the README diagrams and the rule catalog, because both count the rules you
+   just changed:
+   ```bash
+   make diagrams
+   ```
+   Commit the updated files under `assets/` **and** `docs/rule-catalog.md`. CI runs
+   `make check-diagrams`, which fails while either still shows the old counts.
+
+6. Submit a PR.
 
 `pipelock-community` is the default bundle, so existing commands such as `make compile` still target it.
 

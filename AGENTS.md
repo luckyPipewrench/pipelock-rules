@@ -17,11 +17,16 @@ Community detection rule bundles for [Pipelock](https://github.com/luckyPipewren
 make compile         # Merge default bundle files into published/pipelock-community/bundle.yaml
 make validate        # Compile + install into pipelock (validates schema and regexes)
 make test-fixtures   # Run every regex against its true/false positive fixtures
+make diagrams        # Re-render the README diagrams and docs/rule-catalog.md
+make check-diagrams  # Fail if an asset, a painted count, or a README claim has drifted
+make preflight       # check-diagrams, then validate and test-fixtures for every bundle
 ```
 
 Set `BUNDLE_NAME=<bundle-name>` to work on a non-default bundle, for example `BUNDLE_NAME=healthcare-phi-pii make test-fixtures`.
 
 `make validate` requires `pipelock` on PATH. Install with `go install github.com/luckyPipewrench/pipelock/cmd/pipelock@latest`.
+
+Any change to rule counts, bundle versions, the Pipelock version CI installs, the pinned signing key, or a CI job name changes what the README diagrams claim. Run `make diagrams` and commit both the regenerated `assets/` and `docs/rule-catalog.md`; `make check-diagrams` fails otherwise. The generator reads only `python3` from the standard library, so it needs no extra tooling.
 
 ## Repository Layout
 

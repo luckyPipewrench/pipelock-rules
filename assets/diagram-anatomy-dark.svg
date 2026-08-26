@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="412" viewBox="0 0 1200 412" role="img" aria-label="Anatomy of the tool-poison-concealment rule: its declaration, the shape of its pattern, and the fixtures that hold it to it">
+  <text x="24" y="34" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" fill="#94a3b8" font-weight="600" letter-spacing="0.15em">ONE RULE, TAKEN APART</text>
+  <rect x="24" y="58" width="430" height="248" rx="12" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1"/>
+  <text x="44" y="92" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="16" fill="#00e5a0" font-weight="700">tool-poison-concealment</text>
+  <text x="44" y="116" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="14" fill="#e2e8f0">Tool Concealment</text>
+  <path d="M 44 134 L 434 134" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1" stroke-linecap="butt" fill="none"/>
+  <text x="44" y="158" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#64748b">type</text>
+  <text x="184" y="158" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#e2e8f0" font-weight="600">tool-poison</text>
+  <text x="44" y="180" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#64748b">status</text>
+  <text x="184" y="180" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#e2e8f0" font-weight="600">stable</text>
+  <text x="44" y="202" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#64748b">severity</text>
+  <text x="184" y="202" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#e2e8f0" font-weight="600">critical</text>
+  <text x="44" y="224" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#64748b">confidence</text>
+  <text x="184" y="224" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#e2e8f0" font-weight="600">high</text>
+  <text x="44" y="246" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#64748b">scans</text>
+  <text x="184" y="246" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#e2e8f0" font-weight="600">description</text>
+  <path d="M 44 260 L 434 260" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1" stroke-linecap="butt" fill="none"/>
+  <path d="M 45 280 L 49 284 L 55 275.5" fill="none" stroke="#00e5a0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="64" y="284" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" fill="#00e5a0" font-weight="600">primary source: explorer.invariantlabs.ai</text>
+  <rect x="474" y="58" width="352" height="248" rx="12" fill="#ffffff" fill-opacity="0.04" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1"/>
+  <text x="494" y="88" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="10" fill="#94a3b8" font-weight="600" letter-spacing="0.15em">PATTERN SHAPE</text>
+  <text x="494" y="116" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#64748b">The pattern itself is not printed here.</text>
+  <path d="M 494 134 L 806 134" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1" stroke-linecap="butt" fill="none"/>
+  <text x="494" y="162" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#64748b">characters</text>
+  <text x="806" y="162" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#e2e8f0" font-weight="600" text-anchor="end">132</text>
+  <text x="494" y="186" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#64748b">alternatives</text>
+  <text x="806" y="186" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#e2e8f0" font-weight="600" text-anchor="end">13</text>
+  <text x="494" y="210" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#64748b">non-capturing groups</text>
+  <text x="806" y="210" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#e2e8f0" font-weight="600" text-anchor="end">3</text>
+  <text x="494" y="234" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#64748b">bounded quantifier</text>
+  <text x="806" y="234" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="12" fill="#e2e8f0" font-weight="600" text-anchor="end">{0,40}</text>
+  <path d="M 494 260 L 806 260" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1" stroke-linecap="butt" fill="none"/>
+  <path d="M 495 280 L 499 284 L 505 275.5" fill="none" stroke="#00e5a0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="514" y="284" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" fill="#00e5a0" font-weight="600">RE2: no lookaround, no backrefs</text>
+  <rect x="846" y="58" width="330" height="114" rx="12" fill="#00e5a0" fill-opacity="0.12" stroke="#00e5a0" stroke-opacity="0.35" stroke-width="1"/>
+  <path d="M 865 100 L 872.2 107.2 L 883 91.9" fill="none" stroke="#00e5a0" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="900" y="110" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="32" fill="#00e5a0" font-weight="700">7</text>
+  <text x="866" y="142" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#e2e8f0" font-weight="600">true-positive lines</text>
+  <text x="866" y="162" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" fill="#94a3b8">must all match</text>
+  <rect x="846" y="192" width="330" height="114" rx="12" fill="#ef4444" fill-opacity="0.14" stroke="#ef4444" stroke-width="1"/>
+  <path d="M 866 226 L 882 242 M 882 226 L 866 242" fill="none" stroke="#ef4444" stroke-width="2.6" stroke-linecap="round"/>
+  <text x="900" y="244" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="32" fill="#ef4444" font-weight="700">6</text>
+  <text x="866" y="276" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#e2e8f0" font-weight="600">false-positive lines</text>
+  <text x="866" y="296" font-family="'JetBrains Mono', 'JetBrainsMono Nerd Font', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, monospace" font-size="11" fill="#94a3b8">must never match</text>
+  <path d="M 24 342 L 1176 342" stroke="#ffffff" stroke-opacity="0.10" stroke-width="1" stroke-linecap="butt" fill="none"/>
+  <text x="24" y="372" font-family="Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#64748b">A stable rule carries a primary source, fixtures that must match, and fixtures that must not. An experimental rule has only the first kind, so it stays off until you ask for it.</text>
+</svg>

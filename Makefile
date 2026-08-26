@@ -11,16 +11,27 @@ export TMPDIR GOCACHE
 VALIDATE_NAME ?= validate-$(BUNDLE_NAME)
 VALIDATE_DIR := $(TMPDIR)/pipelock-validate-rules
 
-.PHONY: preflight compile validate require-pipelock sign test-fixtures publish clean stats
+.PHONY: preflight compile validate require-pipelock sign test-fixtures publish clean stats diagrams check-diagrams
 
 # Runs fully offline when Pipelock is already installed. The CLI is the schema
 # authority, so absence is a clear fail-closed prerequisite error, never an
 # implicit download or a skipped schema check. Check every maintained bundle:
 # a default-only gate would miss a normal healthcare rule change.
-preflight:
+preflight: check-diagrams
 	@set -e; for bundle in $(PREFLIGHT_BUNDLES); do \
 		$(MAKE) BUNDLE_NAME="$$bundle" validate test-fixtures; \
 	done
+
+# Regenerate the README diagrams from the live bundles.
+diagrams:
+	@python3 scripts/render_diagrams.py
+
+# Fail when a committed asset, a painted count, or a README claim no longer
+# matches the bundles. Needs only python3, so it runs before the Pipelock CLI
+# prerequisite and gives a fast answer on a documentation-only change.
+check-diagrams:
+	@PYTHONDONTWRITEBYTECODE=1 python3 -m unittest scripts/render_diagrams_test.py
+	@python3 scripts/render_diagrams.py --check
 
 require-pipelock:
 	@command -v pipelock >/dev/null 2>&1 || { \
