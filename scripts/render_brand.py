@@ -347,6 +347,14 @@ MARK_ATTRS = {
     "fill-rule", "clip-rule", "opacity", "fill-opacity", "stroke-opacity",
 }
 TRANSFORM_NAMES = {"matrix", "translate", "scale", "rotate", "skewX", "skewY"}
+TRANSFORM_ARITIES = {
+    "matrix": {6},
+    "translate": {1, 2},
+    "scale": {1, 2},
+    "rotate": {1, 3},
+    "skewX": {1},
+    "skewY": {1},
+}
 
 
 def _safe_transform(value: str) -> bool:
@@ -359,7 +367,7 @@ def _safe_transform(value: str) -> bool:
         if not match or match.group(1) not in TRANSFORM_NAMES:
             return False
         arguments = [part for part in re.split(r"[\s,]+", match.group(2).strip()) if part]
-        if not arguments:
+        if len(arguments) not in TRANSFORM_ARITIES[match.group(1)]:
             return False
         try:
             numbers = [float(part) for part in arguments]

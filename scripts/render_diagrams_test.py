@@ -304,6 +304,18 @@ class BrandMarkPolicyTest(unittest.TestCase):
                     f'<g fill="#00e5a0" transform="{transform}"><path d="M0 0"/></g>')
                 self.assertTrue(any("transform" in problem for problem in problems), problems)
 
+    def test_transform_argument_counts_follow_svg(self):
+        invalid = ("matrix(1)", "rotate(1 2)", "translate(1 2 3)", "skewX(1 2)")
+        for transform in invalid:
+            with self.subTest(transform=transform):
+                self.assertFalse(brand._safe_transform(transform))
+
+        valid = ("matrix(1 0 0 1 2 3)", "rotate(1)", "rotate(1 2 3)",
+                 "translate(1)", "translate(1 2)", "scale(2)", "skewY(3)")
+        for transform in valid:
+            with self.subTest(transform=transform):
+                self.assertTrue(brand._safe_transform(transform))
+
 
 class ThemeParityTest(unittest.TestCase):
     """A pair that says different things is the failure the generator prevents."""
