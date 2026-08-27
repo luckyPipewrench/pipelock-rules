@@ -4,7 +4,9 @@
 set -euo pipefail
 
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-tmp="$(mktemp -d "${TMPDIR:-/tmp}/pipelock-rules-compat.XXXXXX")"
+tmp_root="${TMPDIR:-/tmp}"
+mkdir -p "$tmp_root"
+tmp="$(mktemp -d "$tmp_root/pipelock-rules-compat.XXXXXX")"
 trap 'rm -rf "$tmp"' EXIT
 actual_version="$(pipelock --version | sed -n 's/^pipelock version \([0-9][0-9.]*\)$/\1/p')"
 [[ -n "$actual_version" ]] || { printf 'compatibility install: FAIL - cannot read pipelock version\n' >&2; exit 1; }
