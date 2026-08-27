@@ -160,6 +160,14 @@ pipelock rules list
 
 See the [full bundle authoring guide](https://github.com/luckyPipewrench/pipelock/blob/main/docs/rules.md#creating-your-own-bundle) for the YAML schema, signing, distribution, and trust model.
 
+## Compatibility contract
+
+The maintained bundles are tested from their declared `min_pipelock` through Pipelock `3.4.0`. A newer Pipelock release sits outside this tested range. It should warn and continue unless it cannot read the bundle format. Pipelock `3.4.0` does not expose that warning yet, so `compatibility/contract.yaml` records the tested ceiling until a product update adds it.
+
+The contract binds each published bundle's name, CalVer, minimum version, and `format_version` to a SHA-256-pinned reader-schema identity. The two bundles named in the contract add detections. They don't carry per-rule allow or block actions, and they can't replace built-in patterns. Format 1 has no monotonic rollback counter. The installer refuses a same-version digest change.
+
+Run `make check-compatibility` to check that binding and exercise the installer with two pinned bundles, one format-1 optional-field fixture, and four negative cases: same-version digest change, unsupported format, too-new minimum, and unknown reader field. `make preflight` includes the check.
+
 ## Development
 
 ```bash

@@ -11,13 +11,13 @@ export TMPDIR GOCACHE
 VALIDATE_NAME ?= validate-$(BUNDLE_NAME)
 VALIDATE_DIR := $(TMPDIR)/pipelock-validate-rules
 
-.PHONY: preflight compile validate require-pipelock sign test-fixtures publish clean stats diagrams check-diagrams brand check-brand
+.PHONY: preflight compile validate require-pipelock sign test-fixtures publish clean stats diagrams check-diagrams brand check-brand check-compatibility
 
 # Runs fully offline when Pipelock is already installed. The CLI is the schema
 # authority, so absence is a clear fail-closed prerequisite error, never an
 # implicit download or a skipped schema check. Check every maintained bundle:
 # a default-only gate would miss a normal healthcare rule change.
-preflight: check-diagrams check-brand
+preflight: check-diagrams check-brand check-compatibility
 	@set -e; for bundle in $(PREFLIGHT_BUNDLES); do \
 		$(MAKE) BUNDLE_NAME="$$bundle" validate test-fixtures; \
 	done
@@ -50,6 +50,15 @@ check-brand:
 check-diagrams:
 	@PYTHONDONTWRITEBYTECODE=1 python3 -m unittest scripts/render_diagrams_test.py
 	@python3 scripts/render_diagrams.py --check
+
+# The compatibility contract is separate from the signed v1 bundle bytes: v1
+# rejects a max_pipelock field, while current Pipelock has no runtime warning
+# surface for a tested ceiling. Validate the bound format identity, then prove
+# the installed reader accepts the declared shape and rejects incompatible ones.
+check-compatibility: require-pipelock
+	@PYTHONDONTWRITEBYTECODE=1 python3 -m unittest scripts/test-compatibility-contract.py
+	@python3 scripts/check-compatibility-contract.py
+	@./scripts/test-compatibility-install.sh
 
 require-pipelock:
 	@command -v pipelock >/dev/null 2>&1 || { \
