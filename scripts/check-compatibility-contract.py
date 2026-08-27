@@ -127,12 +127,40 @@ def top_level_fields(path: pathlib.Path) -> dict[str, object]:
     return fields
 
 
-def is_schema_type(value: object, expected: str) -> bool:
+def is_schema_type(value: object, expected: object) -> bool:
+    if not isinstance(expected, str):
+        return False
     return {
         "string": isinstance(value, str),
         "integer": isinstance(value, int) and not isinstance(value, bool),
         "array": isinstance(value, list),
     }.get(expected, False)
+
+
+def schema_rule_errors(field: str, rule: dict[str, object]) -> list[str]:
+    """Reject schema vocabulary this dependency-free validator cannot enforce."""
+    expected_type = rule.get("type")
+    allowed = {"type", "const"}
+    if expected_type == "string":
+        allowed |= {"minLength", "pattern"}
+    elif expected_type == "integer":
+        allowed.add("minimum")
+    elif expected_type is not None and expected_type != "array":
+        return [f"schema property {field!r} has unsupported type {expected_type!r}"]
+    errors = [f"schema property {field!r} uses unsupported keyword {keyword!r}" for keyword in sorted(set(rule) - allowed)]
+    if "minLength" in rule and (isinstance(rule["minLength"], bool) or not isinstance(rule["minLength"], int) or rule["minLength"] < 0):
+        errors.append(f"schema property {field!r} has invalid minLength")
+    if "pattern" in rule:
+        if not isinstance(rule["pattern"], str):
+            errors.append(f"schema property {field!r} has invalid pattern")
+        else:
+            try:
+                re.compile(rule["pattern"])
+            except re.error:
+                errors.append(f"schema property {field!r} has invalid pattern")
+    if "minimum" in rule and (isinstance(rule["minimum"], bool) or not isinstance(rule["minimum"], (int, float))):
+        errors.append(f"schema property {field!r} has invalid minimum")
+    return errors
 
 
 def validate_schema(bundle_path: pathlib.Path, schema_path: pathlib.Path) -> list[str]:
@@ -143,6 +171,9 @@ def validate_schema(bundle_path: pathlib.Path, schema_path: pathlib.Path) -> lis
     properties = schema.get("properties", {})
     if not isinstance(properties, dict) or not all(isinstance(rule, dict) for rule in properties.values()):
         return ["schema properties must be objects"]
+    schema_errors = [error for field, rule in properties.items() for error in schema_rule_errors(field, rule)]
+    if schema_errors:
+        return schema_errors
     allowed = set(properties)
     required = set(schema.get("required", []))
     fields = top_level_fields(bundle_path)

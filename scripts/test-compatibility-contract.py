@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import importlib.util
 import io
+import json
 import pathlib
 import re
 import shutil
@@ -126,6 +127,21 @@ class CompatibilityContractTests(unittest.TestCase):
                     "name: pipelock-community", f"name: {name}", 1,
                 ), encoding="utf-8")
                 self.assertTrue(any("bundle name must" in error for error in self.check(root)))
+
+    def test_schema_rejects_unsupported_keywords_and_types_without_crashing(self) -> None:
+        root = self.copied_root()
+        bundle = root / "published" / "healthcare-phi-pii" / "bundle.yaml"
+        schema_path = root / "compatibility" / "pipelock-rules-format-v1.schema.json"
+        schema = json.loads(schema_path.read_text(encoding="utf-8"))
+
+        schema["properties"]["author"]["enum"] = ["maintainer"]
+        schema_path.write_text(json.dumps(schema), encoding="utf-8")
+        self.assertTrue(any("unsupported keyword 'enum'" in error for error in compatibility.validate_schema(bundle, schema_path)))
+
+        schema["properties"]["author"].pop("enum")
+        schema["properties"]["author"]["type"] = ["string", "null"]
+        schema_path.write_text(json.dumps(schema), encoding="utf-8")
+        self.assertTrue(any("unsupported type" in error for error in compatibility.validate_schema(bundle, schema_path)))
 
 
 if __name__ == "__main__":
