@@ -1,0 +1,44 @@
+name: Pipelock Security Scan
+
+# This repository publishes detection rules, so it is scanned by the product it
+# writes rules for. The scan lived inside the CI workflow, where its result was
+# only visible as part of a combined CI badge; a reader could not tell whether
+# the scan itself passed. It runs on its own here so the README badge reports
+# this scan and nothing else.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: pipelock-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
+
+permissions:
+  contents: read
+
+jobs:
+  security-scan:
+    name: Pipelock scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+        with:
+          fetch-depth: 0
+
+      # Fixtures and scripts are excluded because a fixture is a deliberate
+      # sample of the thing being detected. Scanning them reports the corpus as
+      # findings, which is the scanner working, not a defect to fix.
+      - name: Pipelock Scan
+        uses: luckyPipewrench/pipelock@4c748ab986d611138ce202ab800b16eca6fb589f # v3.4.0
+        with:
+          scan-diff: 'true'
+          fail-on-findings: 'true'
+          test-vectors: 'false'
+          exclude-paths: |
+            fixtures/
+            scripts/

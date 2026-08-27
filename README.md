@@ -1,6 +1,6 @@
-<p align="center">
-  <img src="assets/pipelock-rules-lockup.svg" alt="pipelock-rules" width="420">
-</p>
+<h1 align="center">
+  <img src="assets/pipelock-rules-lockup.svg" alt="Pipelock Rules" width="420">
+</h1>
 
 <p align="center">
   Signed, versioned detection rules for <a href="https://github.com/luckyPipewrench/pipelock">Pipelock</a>, the open-source agent firewall.
@@ -9,6 +9,7 @@
 <p align="center">
   <a href="https://github.com/luckyPipewrench/pipelock-rules/actions/workflows/ci.yaml"><img src="https://github.com/luckyPipewrench/pipelock-rules/actions/workflows/ci.yaml/badge.svg" alt="CI"></a>
   <a href="https://github.com/luckyPipewrench/pipelock-rules/actions/workflows/codeql.yaml"><img src="https://github.com/luckyPipewrench/pipelock-rules/actions/workflows/codeql.yaml/badge.svg" alt="CodeQL"></a>
+  <a href="https://github.com/luckyPipewrench/pipelock-rules/actions/workflows/pipelock.yaml"><img src="https://github.com/luckyPipewrench/pipelock-rules/actions/workflows/pipelock.yaml/badge.svg" alt="Pipelock Security Scan"></a>
   <a href="https://scorecard.dev/viewer/?uri=github.com/luckyPipewrench/pipelock-rules"><img src="https://api.scorecard.dev/projects/github.com/luckyPipewrench/pipelock-rules/badge" alt="OpenSSF Scorecard"></a>
   <a href="https://github.com/luckyPipewrench/pipelock"><img src="https://img.shields.io/badge/tested_with_Pipelock-v3.4.0-00e5a0?labelColor=0e0e11" alt="Tested with Pipelock v3.4.0"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-00e5a0?labelColor=0e0e11" alt="License: Apache 2.0"></a>

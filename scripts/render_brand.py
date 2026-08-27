@@ -44,8 +44,19 @@ MONO = ("'JetBrains Mono', 'JetBrainsMono Nerd Font', ui-monospace, "
         "SFMono-Regular, Menlo, monospace")
 SANS = "Inter, system-ui, -apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif"
 
-WORDMARK = "pipelock-rules"
+# The display name. The repository slug stays `pipelock-rules` and is used
+# for URLs, clone commands, and artifact names; it is not a wordmark.
+WORDMARK = "Pipelock Rules"
+WORDMARK_LEAD = "Pipelock "
+WORDMARK_ACCENT = "Rules"
 TAGLINE = "Signed, versioned detection rules for Pipelock"
+
+# Family social-card footer. Same string, type, and position as Agent Egress
+# Bench, so the two generated cards share one attribution rather than two.
+CARD_FOOTER = "Apache 2.0  ·  maintained by PipeLab"
+CARD_FOOTER_X = 120
+CARD_FOOTER_Y = 566
+CARD_FOOTER_SIZE = 16
 
 
 def _fail(message: str):
@@ -164,6 +175,15 @@ def favicon() -> str:
     return "\n".join(out) + "\n"
 
 
+# Type metrics for the monospace wordmark. Every glyph in a monospace face
+# advances 0.6em, so a wordmark's width is exact arithmetic. ASCENDER and
+# DESCENDER describe the visual band used to centre it against the mark.
+MONO_ADVANCE = 0.6
+TRACKING = 0.02
+ASCENDER = 0.75
+DESCENDER = 0.21
+
+
 def lockup() -> str:
     """Mark and wordmark on ONE line, for a header or a slide.
 
@@ -171,15 +191,29 @@ def lockup() -> str:
     reads off-balance however it is aligned, which is the exact defect the
     sibling benchmark repository's header had.
     """
-    w, h = 620, 116
+    margin, mark_size, gap, size = 20, 96, 24, 46
+    text_x = margin + mark_size + gap
+    # Monospace: every glyph advances the same width, so the wordmark's extent
+    # is arithmetic rather than an estimate. MONO_ADVANCE and TRACKING are named
+    # so a font or tracking change moves the canvas with them.
+    text_w = round(len(WORDMARK) * size * (MONO_ADVANCE - TRACKING), 2)
+    w = round(text_x + text_w + margin, 2)
+    h = margin * 2 + mark_size - 24
+
+    # Centre the wordmark's ink on the mark's centre. A baseline sits below the
+    # letters, so aligning baselines would hang the word low; this offsets by
+    # half the visual band (ascender to descender) instead.
+    mark_centre = 10 + mark_size / 2
+    baseline = round(mark_centre - (ASCENDER + DESCENDER) * size / 2 + ASCENDER * size, 2)
+
     out = _open(w, h, f"{WORDMARK} logo lockup")
-    out.append(placed_mark(20, 10, 96))
+    out.append(placed_mark(margin, 10, mark_size))
     # Two-tone wordmark. The accent lands on the word that distinguishes
     # this project from its parent, matching 'Agent Egress Bench' next door.
-    out.append(f'  <text x="140" y="74" font-family="{MONO}" font-size="46" '
-               f'font-weight="700" letter-spacing="-0.02em" xml:space="preserve">'
-               f'<tspan fill="{TEXT}">pipelock-</tspan>'
-               f'<tspan fill="{ACCENT}">rules</tspan></text>')
+    out.append(f'  <text x="{text_x}" y="{baseline}" font-family="{MONO}" font-size="{size}" '
+               f'font-weight="700" letter-spacing="{-TRACKING}em" xml:space="preserve">'
+               f'<tspan fill="{TEXT}">{WORDMARK_LEAD}</tspan>'
+               f'<tspan fill="{ACCENT}">{WORDMARK_ACCENT}</tspan></text>')
     # No tagline. A lockup is a mark and a wordmark; a page that uses it as a
     # header states the tagline in text directly beneath, and a lockup carrying
     # its own copy made the header say it twice.
@@ -206,8 +240,8 @@ def lockup_stacked() -> str:
     out.append(f'  <text x="{w / 2}" y="222" font-family="{MONO}" font-size="42" '
                f'font-weight="700" letter-spacing="-0.02em" text-anchor="middle" '
                f'xml:space="preserve">'
-               f'<tspan fill="{TEXT}">pipelock-</tspan>'
-               f'<tspan fill="{ACCENT}">rules</tspan></text>')
+               f'<tspan fill="{TEXT}">{WORDMARK_LEAD}</tspan>'
+               f'<tspan fill="{ACCENT}">{WORDMARK_ACCENT}</tspan></text>')
     out.append("</svg>")
     return "\n".join(out) + "\n"
 
@@ -252,11 +286,11 @@ def social_preview() -> str:
     # 86 the name carries the card the way it carries the lockup.
     #
     # Accent lands on the word that distinguishes THIS project, which is the
-    # rule the sibling repositories follow: "Agent Egress Bench", "pipelock-rules".
+    # rule the sibling repositories follow: "Agent Egress Bench", "Pipelock Rules".
     out.append(f'  <text x="452" y="300" font-family="{MONO}" font-size="86" '
                f'font-weight="700" letter-spacing="-0.025em" xml:space="preserve">'
-               f'<tspan fill="{TEXT}">pipelock-</tspan>'
-               f'<tspan fill="{ACCENT}">rules</tspan></text>')
+               f'<tspan fill="{TEXT}">{WORDMARK_LEAD}</tspan>'
+               f'<tspan fill="{ACCENT}">{WORDMARK_ACCENT}</tspan></text>')
     out.append(_text(456, 352, TAGLINE, fill=MUTED, size=25))
 
     chip_x = 456
@@ -269,8 +303,8 @@ def social_preview() -> str:
                          family=MONO, weight=600, anchor="middle"))
         chip_x += width + 16
 
-    out.append(_text(120, 566, "Apache 2.0  ·  maintained by PipeLab", fill=DIM,
-                     size=16, family=MONO, spacing="0.12em"))
+    out.append(_text(CARD_FOOTER_X, CARD_FOOTER_Y, CARD_FOOTER, fill=DIM,
+                     size=CARD_FOOTER_SIZE, family=MONO, spacing="0.12em"))
     out.append("</svg>")
     return "\n".join(out) + "\n"
 
@@ -382,6 +416,15 @@ def brand_problems() -> list:
     for referenced in sorted(set(re.findall(r"actions/workflows/([\w.-]+\.yaml)", readme))):
         if not (workflows / referenced).is_file():
             problems.append(f"README: badges {referenced}, which is not in .github/workflows/")
+
+    # The family footer is a contract with the sibling card, not decoration.
+    card = social_preview()
+    if CARD_FOOTER not in card:
+        problems.append("social-preview: missing the family footer line")
+    if f'x="{CARD_FOOTER_X}"' not in card or f'y="{CARD_FOOTER_Y}"' not in card:
+        problems.append(
+            f"social-preview: family footer is not at {CARD_FOOTER_X},{CARD_FOOTER_Y}"
+        )
     return problems
 
 
