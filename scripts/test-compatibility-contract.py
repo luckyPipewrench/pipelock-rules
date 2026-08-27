@@ -82,10 +82,17 @@ class CompatibilityContractTests(unittest.TestCase):
                     compatibility.check(root)
 
     def test_unknown_reader_field_fails(self) -> None:
-        root = self.copied_root()
-        path = root / "published" / "healthcare-phi-pii" / "bundle.yaml"
-        path.write_text(path.read_text(encoding="utf-8").replace("format_version: 1", "format_version: 1\nunknown_reader_field: true", 1), encoding="utf-8")
-        self.assertTrue(any("unknown reader field" in error for error in self.check(root)))
+        for field, expected in (
+            ("unknown_reader_field", "unknown reader field"),
+            ("unknown-reader-field", "cannot parse bundle header line"),
+        ):
+            with self.subTest(field=field):
+                root = self.copied_root()
+                path = root / "published" / "healthcare-phi-pii" / "bundle.yaml"
+                path.write_text(path.read_text(encoding="utf-8").replace(
+                    "format_version: 1", f"format_version: 1\n{field}: true", 1,
+                ), encoding="utf-8")
+                self.assertTrue(any(expected in error for error in self.check(root)))
 
     def test_schema_rejects_required_header_wrong_types_and_empty_strings(self) -> None:
         for field, value, expected in (
@@ -142,6 +149,24 @@ class CompatibilityContractTests(unittest.TestCase):
         schema["properties"]["author"]["type"] = ["string", "null"]
         schema_path.write_text(json.dumps(schema), encoding="utf-8")
         self.assertTrue(any("unsupported type" in error for error in compatibility.validate_schema(bundle, schema_path)))
+
+    def test_schema_rejects_malformed_required_without_crashing(self) -> None:
+        for required in (
+            [["author"]],
+            ["author", "author"],
+            "author",
+        ):
+            with self.subTest(required=required):
+                root = self.copied_root()
+                bundle = root / "published" / "healthcare-phi-pii" / "bundle.yaml"
+                schema_path = root / "compatibility" / "pipelock-rules-format-v1.schema.json"
+                schema = json.loads(schema_path.read_text(encoding="utf-8"))
+                schema["required"] = required
+                schema_path.write_text(json.dumps(schema), encoding="utf-8")
+                self.assertEqual(
+                    compatibility.validate_schema(bundle, schema_path),
+                    ["schema required must be a list of unique strings"],
+                )
 
 
 if __name__ == "__main__":

@@ -124,6 +124,8 @@ def top_level_fields(path: pathlib.Path) -> dict[str, object]:
             if key in fields:
                 raise ValueError(f"duplicate bundle field {key!r}")
             fields[key] = match.group(3) if match.group(3) is not None else yaml_scalar(match.group(4))
+        elif raw and not raw[0].isspace() and not raw.startswith("#"):
+            raise ValueError(f"cannot parse bundle header line: {raw}")
     return fields
 
 
@@ -175,8 +177,18 @@ def validate_schema(bundle_path: pathlib.Path, schema_path: pathlib.Path) -> lis
     if schema_errors:
         return schema_errors
     allowed = set(properties)
-    required = set(schema.get("required", []))
-    fields = top_level_fields(bundle_path)
+    required_values = schema.get("required", [])
+    if (
+        not isinstance(required_values, list)
+        or not all(isinstance(field, str) for field in required_values)
+        or len(set(required_values)) != len(required_values)
+    ):
+        return ["schema required must be a list of unique strings"]
+    required = set(required_values)
+    try:
+        fields = top_level_fields(bundle_path)
+    except ValueError as err:
+        return [str(err)]
     errors = [f"unknown reader field {field!r}" for field in sorted(set(fields) - allowed)]
     errors.extend(f"missing required field {field!r}" for field in sorted(required - set(fields)))
     for field, value in fields.items():
@@ -262,7 +274,11 @@ def check(root: pathlib.Path) -> tuple[dict[int, dict[str, str]], list[dict[str,
             continue
         if hashlib.sha256(bundle_path.read_bytes()).hexdigest() != bundle["bundle_sha256"]:
             errors.append(f"{name}: bundle_sha256 does not match published bytes")
-        fields = top_level_fields(bundle_path)
+        try:
+            fields = top_level_fields(bundle_path)
+        except ValueError as err:
+            errors.append(f"{name}: {err}")
+            continue
         for field in ("name", "version", "format_version", "min_pipelock"):
             if fields.get(field) != yaml_scalar(bundle[field]):
                 errors.append(f"{name}: {field} does not match published bundle")
