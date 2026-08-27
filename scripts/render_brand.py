@@ -338,6 +338,39 @@ MARK_ELEMENTS = {"svg", "g", "path", "circle", "ellipse", "rect", "polygon",
 # Attributes that carry paint. A flat mark states a literal colour or none.
 PAINT_ATTRS = ("fill", "stroke", "color", "stop-color", "flood-color")
 
+# No references, event handlers, embedded CSS, or namespace-qualified attributes
+# belong in a flat mark. Geometry and presentation stay explicit and local.
+MARK_ATTRS = {
+    "d", "x", "y", "x1", "y1", "x2", "y2", "cx", "cy", "r", "rx", "ry",
+    "width", "height", "points", "transform", "fill", "stroke", "color",
+    "stroke-width", "stroke-linecap", "stroke-linejoin", "stroke-miterlimit",
+    "fill-rule", "clip-rule", "opacity", "fill-opacity", "stroke-opacity",
+}
+TRANSFORM_NAMES = {"matrix", "translate", "scale", "rotate", "skewX", "skewY"}
+
+
+def _safe_transform(value: str) -> bool:
+    """Accept finite, bounded SVG transform functions and numeric arguments."""
+    position = 0
+    matched = False
+    pattern = re.compile(r"\s*([A-Za-z]+)\s*\(([^()]*)\)\s*,?")
+    while position < len(value):
+        match = pattern.match(value, position)
+        if not match or match.group(1) not in TRANSFORM_NAMES:
+            return False
+        arguments = [part for part in re.split(r"[\s,]+", match.group(2).strip()) if part]
+        if not arguments:
+            return False
+        try:
+            numbers = [float(part) for part in arguments]
+        except ValueError:
+            return False
+        if any(not math.isfinite(number) or abs(number) > 1_000_000 for number in numbers):
+            return False
+        matched = True
+        position = match.end()
+    return matched
+
 
 def _mark_policy_problems(inner: str) -> list:
     """Structural check of the master mark: allowed shapes, literal paint only."""
@@ -357,6 +390,16 @@ def _mark_policy_problems(inner: str) -> list:
                 f"mark.svg: uses <{tag}>, which a flat single-colour mark does not need; "
                 "add it to MARK_ELEMENTS deliberately if that is wrong")
             continue
+        for raw_attr, value in node.attrib.items():
+            attr = raw_attr.split("}")[-1]
+            if raw_attr.startswith("{") or attr not in MARK_ATTRS:
+                problems.append(
+                    f"mark.svg: <{tag}> carries unsupported attribute {raw_attr!r}; "
+                    "flat marks cannot contain references, handlers or embedded behavior")
+            elif attr == "transform" and not _safe_transform(value):
+                problems.append(
+                    f"mark.svg: transform {value!r} is malformed, non-finite or outside "
+                    "the supported coordinate range")
         for attr in PAINT_ATTRS:
             value = (node.get(attr) or "").strip()
             if not value or value.lower() in {"none", "currentcolor", "inherit"}:

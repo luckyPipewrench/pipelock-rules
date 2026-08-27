@@ -28,17 +28,16 @@ diagrams:
 
 # Compose the brand assets from assets/mark.svg, the committed master.
 brand:
+	@command -v inkscape >/dev/null 2>&1 || { \
+		echo "inkscape is required to regenerate vectors, rasters, and provenance together" >&2; \
+		exit 1; \
+	}
 	@python3 scripts/render_brand.py
-	@if command -v inkscape >/dev/null 2>&1; then \
-		set -e; \
-		inkscape assets/pipelock-rules-logo.svg -o assets/pipelock-rules-logo-256.png -w 256 >/dev/null; \
-		inkscape assets/social-preview.svg -o assets/social-preview.png -w 1280 >/dev/null; \
-		python3 scripts/render_brand.py --stamp-png; \
-		echo "exported rasters"; \
-	else \
-		echo "inkscape absent: vectors written, rasters left as committed"; \
-		echo "  check-brand will report them as stale until they are re-exported"; \
-	fi
+	@set -e; \
+	inkscape assets/pipelock-rules-logo.svg -o assets/pipelock-rules-logo-256.png -w 256 >/dev/null; \
+	inkscape assets/social-preview.svg -o assets/social-preview.png -w 1280 >/dev/null; \
+	python3 scripts/render_brand.py --stamp-png; \
+	echo "exported rasters"
 
 # Fail when a brand asset drifts from the master mark, the mark stops following
 # the brand rules, or the README shows a badge for a workflow that is gone.

@@ -288,6 +288,23 @@ class BrandProvenanceTest(unittest.TestCase):
                             for problem in brand.raster_problems()))
 
 
+class BrandMarkPolicyTest(unittest.TestCase):
+    """The hand-authored mark cannot smuggle behavior into generated SVGs."""
+
+    def test_event_handler_and_external_reference_are_rejected(self):
+        inner = '<g fill="#00e5a0" onclick="run()"><path d="M0 0" href="https://example.test"/></g>'
+        problems = brand._mark_policy_problems(inner)
+        self.assertTrue(any("onclick" in problem for problem in problems), problems)
+        self.assertTrue(any("href" in problem for problem in problems), problems)
+
+    def test_non_finite_and_extreme_transforms_are_rejected(self):
+        for transform in ("scale(NaN)", "translate(1000001 0)"):
+            with self.subTest(transform=transform):
+                problems = brand._mark_policy_problems(
+                    f'<g fill="#00e5a0" transform="{transform}"><path d="M0 0"/></g>')
+                self.assertTrue(any("transform" in problem for problem in problems), problems)
+
+
 class ThemeParityTest(unittest.TestCase):
     """A pair that says different things is the failure the generator prevents."""
 
@@ -607,14 +624,21 @@ class CommittedAssetTest(unittest.TestCase):
         generators write here now, so this asks both rather than being widened
         to tolerate whatever it finds: an unclaimed file is still a defect.
         """
-        expected = {path.name for path in generator.build()}
+        expected = {path.name for path in generator.build()
+                    if path.parent == generator.ASSET_DIR}
         expected |= {path.name for path in brand.build()}
         expected |= set(brand.PNG_EXPORTS)
         # Each raster records the vector it was exported from, so check-brand can
         # tell a current PNG from one left over by an earlier mark.
         expected |= {f"{png}.source" for png in brand.PNG_EXPORTS}
         expected.add(brand.MARK.name)          # the committed master
-        on_disk = {path.name for path in generator.ASSET_DIR.iterdir()}
+        entries = list(generator.ASSET_DIR.iterdir())
+        for path in entries:
+            with self.subTest(asset=path.name):
+                self.assertFalse(path.is_symlink(), f"{path.name} must not be a symlink")
+                self.assertTrue(path.is_file(), f"{path.name} must be a regular file")
+        on_disk = {path.name for path in entries}
+        self.assertEqual(expected - on_disk, set())
         self.assertEqual(on_disk - expected, set())
 
     def test_the_readme_embeds_both_themes_of_every_diagram(self):
