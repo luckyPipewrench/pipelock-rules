@@ -1,4 +1,6 @@
-<h1 align="center">pipelock-rules</h1>
+<h1 align="center">
+  <img src="assets/pipelock-rules-lockup.svg" alt="Pipelock Rules" width="420">
+</h1>
 
 <p align="center">
   Signed, versioned detection rules for <a href="https://github.com/luckyPipewrench/pipelock">Pipelock</a>, the open-source agent firewall.
@@ -6,9 +8,12 @@
 
 <p align="center">
   <a href="https://github.com/luckyPipewrench/pipelock-rules/actions/workflows/ci.yaml"><img src="https://github.com/luckyPipewrench/pipelock-rules/actions/workflows/ci.yaml/badge.svg" alt="CI"></a>
-  <a href="https://github.com/luckyPipewrench/pipelock"><img src="https://img.shields.io/badge/tested_with_Pipelock-v3.4.0-00e5a0" alt="Tested with Pipelock v3.4.0"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache%202.0-blue.svg" alt="License"></a>
-  <a href="https://discord.gg/badNfhGKTc"><img alt="Discord" src="https://img.shields.io/badge/Discord-Join%20the%20community-5865F2?logo=discord&logoColor=white"></a>
+  <a href="https://github.com/luckyPipewrench/pipelock-rules/actions/workflows/codeql.yaml"><img src="https://github.com/luckyPipewrench/pipelock-rules/actions/workflows/codeql.yaml/badge.svg" alt="CodeQL"></a>
+  <a href="https://github.com/luckyPipewrench/pipelock-rules/actions/workflows/pipelock.yaml"><img src="https://github.com/luckyPipewrench/pipelock-rules/actions/workflows/pipelock.yaml/badge.svg" alt="Pipelock Security Scan"></a>
+  <a href="https://scorecard.dev/viewer/?uri=github.com/luckyPipewrench/pipelock-rules"><img src="https://api.scorecard.dev/projects/github.com/luckyPipewrench/pipelock-rules/badge" alt="OpenSSF Scorecard"></a>
+  <a href="https://github.com/luckyPipewrench/pipelock"><img src="https://img.shields.io/badge/tested_with_Pipelock-v3.4.0-00e5a0?labelColor=0e0e11" alt="Tested with Pipelock v3.4.0"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-00e5a0?labelColor=0e0e11" alt="License: Apache 2.0"></a>
+  <a href="https://discord.gg/badNfhGKTc"><img src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white&labelColor=0e0e11" alt="Discord"></a>
 </p>
 
 Pipelock ships with built-in DLP, injection, and tool-poison scanners. Rule bundles extend those defaults with patterns that ship on a faster cadence than the core binary. Bundles are Ed25519-signed, versioned, and additive: they add detections and never override or weaken a built-in one.
@@ -26,10 +31,17 @@ Any published bundle installs by name from the Pipelock registry at `https://pip
 pipelock rules install <bundle>
 ```
 
-Published so far:
+Published so far. Each is a separate block, because you almost certainly want one of them rather than both:
+
+**`pipelock-community`** — credentials, prompt injection, and MCP tool poisoning.
 
 ```bash
 pipelock rules install pipelock-community
+```
+
+**`healthcare-phi-pii`** — PHI and PII for healthcare agents.
+
+```bash
 pipelock rules install healthcare-phi-pii
 ```
 

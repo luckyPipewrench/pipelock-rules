@@ -20,9 +20,6 @@ import re
 import tempfile
 import unittest
 
-# Every document parsed here is a string this same module just generated from a
-# literal template, so the stdlib parser never sees an untrusted document and
-# the repository keeps its stdlib-only tooling rule.
 import xml.etree.ElementTree as ElementTree
 from pathlib import Path
 
@@ -32,6 +29,14 @@ spec = importlib.util.spec_from_file_location("render_diagrams", SCRIPT)
 assert spec and spec.loader
 generator = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(generator)
+
+# The brand generator writes into the same assets/ directory, so the orphan
+# check has to ask it what it owns rather than assume anything unclaimed is junk.
+BRAND_SCRIPT = SCRIPT.parent / "render_brand.py"
+_brand_spec = importlib.util.spec_from_file_location("render_brand", BRAND_SCRIPT)
+assert _brand_spec and _brand_spec.loader
+brand = importlib.util.module_from_spec(_brand_spec)
+_brand_spec.loader.exec_module(brand)
 
 SVG = "{http://www.w3.org/2000/svg}"
 
@@ -167,23 +172,49 @@ class PatternSecrecyTest(unittest.TestCase):
     """
 
     def _every_regex(self) -> list:
-        found = []
-        for bundle in generator.BUNDLES:
-            for rule in generator.bundle_rules(bundle):
-                match = generator.REGEX_FIELD.search(rule["block"])
-                if match:
-                    found.append((rule["id"], match.group(1)))
-        return found
+        """Every rule pattern in the corpus, read by the production generator.
+
+        The previous version searched the source text for `regex: \'...\'` at a
+        fixed indent. That matches how every rule happens to be written today,
+        which is exactly why it was risky: a double-quoted or block-scalar
+        pattern would be skipped silently and the check would go partial without
+        reporting anything. Parsing sees a pattern however it is quoted.
+        """
+        return [(rule["id"], generator.regex_of(rule))
+                for bundle in generator.BUNDLES
+                for rule in generator.bundle_rules(bundle)]
+
+    def _every_committed_surface(self) -> dict:
+        """Everything both generators write, as text and as rendered text.
+
+        Two reasons this is wider than it looks. The brand vectors live in the
+        same repository and are read by the same scan, so leaving them out meant
+        the gate covered some of what it was protecting. And an SVG stores `<`
+        as `&lt;`, so a pattern can be absent from the raw bytes and present in
+        what a parser hands back: both views are checked.
+        """
+        surfaces = {}
+        for path in list(generator.build()) + list(brand.build()):
+            content = path.read_text(encoding="utf-8")
+            surfaces[path.name] = content
+            if path.suffix == ".svg":
+                try:
+                    root = ElementTree.fromstring(content)
+                except ElementTree.ParseError:
+                    continue
+                surfaces[f"{path.name} (decoded text)"] = "".join(root.itertext())
+        return surfaces
 
     def test_the_scan_finds_patterns_to_check(self):
         # Otherwise every assertion below is vacuously true.
         self.assertGreaterEqual(len(self._every_regex()), 50)
 
     def test_no_generated_asset_contains_any_rule_pattern(self):
-        assets = generator.build()
+        surfaces = self._every_committed_surface()
+        self.assertTrue(surfaces, "no surfaces collected; the check would prove nothing")
         for identifier, pattern in self._every_regex():
-            for path, content in assets.items():
-                with self.subTest(rule=identifier, asset=path.name):
+            for name, content in surfaces.items():
+                with self.subTest(rule=identifier, asset=name):
                     self.assertNotIn(pattern, content)
 
     def test_no_asset_emits_a_long_run_of_digits(self):
@@ -223,6 +254,67 @@ class PatternSecrecyTest(unittest.TestCase):
         rule["block"] = "      regex: '(?=lookahead)'\n"
         with self.assertRaises(SystemExit):
             generator.regex_shape(rule)
+
+
+class BrandProvenanceTest(unittest.TestCase):
+    """The raster gate fails cleanly on missing or replaced inputs."""
+
+    def setUp(self):
+        self.directory = tempfile.TemporaryDirectory()
+        self.saved_asset_dir = brand.ASSET_DIR
+        self.saved_exports = brand.PNG_EXPORTS
+        brand.ASSET_DIR = Path(self.directory.name)
+        brand.PNG_EXPORTS = {"preview.png": ("preview.svg", 1280)}
+        (brand.ASSET_DIR / "preview.svg").write_text("<svg/>\n", encoding="utf-8")
+        (brand.ASSET_DIR / "preview.png").write_bytes(b"png-one")
+        brand.sidecar("preview.png").write_text(
+            brand.raster_fingerprint(
+                brand.ASSET_DIR / "preview.png", brand.ASSET_DIR / "preview.svg"),
+            encoding="utf-8")
+
+    def tearDown(self):
+        brand.ASSET_DIR = self.saved_asset_dir
+        brand.PNG_EXPORTS = self.saved_exports
+        self.directory.cleanup()
+
+    def test_replaced_png_is_reported(self):
+        (brand.ASSET_DIR / "preview.png").write_bytes(b"png-two")
+        self.assertTrue(any("changed since export" in problem
+                            for problem in brand.raster_problems()))
+
+    def test_missing_source_svg_is_reported_without_raising(self):
+        (brand.ASSET_DIR / "preview.svg").unlink()
+        self.assertTrue(any("source assets/preview.svg is missing" in problem
+                            for problem in brand.raster_problems()))
+
+
+class BrandMarkPolicyTest(unittest.TestCase):
+    """The hand-authored mark cannot smuggle behavior into generated SVGs."""
+
+    def test_event_handler_and_external_reference_are_rejected(self):
+        inner = '<g fill="#00e5a0" onclick="run()"><path d="M0 0" href="https://example.test"/></g>'
+        problems = brand._mark_policy_problems(inner)
+        self.assertTrue(any("onclick" in problem for problem in problems), problems)
+        self.assertTrue(any("href" in problem for problem in problems), problems)
+
+    def test_non_finite_and_extreme_transforms_are_rejected(self):
+        for transform in ("scale(NaN)", "translate(1000001 0)"):
+            with self.subTest(transform=transform):
+                problems = brand._mark_policy_problems(
+                    f'<g fill="#00e5a0" transform="{transform}"><path d="M0 0"/></g>')
+                self.assertTrue(any("transform" in problem for problem in problems), problems)
+
+    def test_transform_argument_counts_follow_svg(self):
+        invalid = ("matrix(1)", "rotate(1 2)", "translate(1 2 3)", "skewX(1 2)")
+        for transform in invalid:
+            with self.subTest(transform=transform):
+                self.assertFalse(brand._safe_transform(transform))
+
+        valid = ("matrix(1 0 0 1 2 3)", "rotate(1)", "rotate(1 2 3)",
+                 "translate(1)", "translate(1 2)", "scale(2)", "skewY(3)")
+        for transform in valid:
+            with self.subTest(transform=transform):
+                self.assertTrue(brand._safe_transform(transform))
 
 
 class ThemeParityTest(unittest.TestCase):
@@ -538,9 +630,27 @@ class CommittedAssetTest(unittest.TestCase):
         self.assertEqual(stale, [], "run scripts/render_diagrams.py")
 
     def test_no_orphaned_generated_asset_remains(self):
-        # A retired drawing left on disk keeps rendering somewhere forever.
-        expected = {path.name for path in generator.build()}
-        on_disk = {path.name for path in generator.ASSET_DIR.iterdir()}
+        """Nothing sits in assets/ that no generator claims.
+
+        A retired drawing left on disk keeps rendering somewhere forever. Two
+        generators write here now, so this asks both rather than being widened
+        to tolerate whatever it finds: an unclaimed file is still a defect.
+        """
+        expected = {path.name for path in generator.build()
+                    if path.parent == generator.ASSET_DIR}
+        expected |= {path.name for path in brand.build()}
+        expected |= set(brand.PNG_EXPORTS)
+        # Each raster records the vector it was exported from, so check-brand can
+        # tell a current PNG from one left over by an earlier mark.
+        expected |= {f"{png}.source" for png in brand.PNG_EXPORTS}
+        expected.add(brand.MARK.name)          # the committed master
+        entries = list(generator.ASSET_DIR.iterdir())
+        for path in entries:
+            with self.subTest(asset=path.name):
+                self.assertFalse(path.is_symlink(), f"{path.name} must not be a symlink")
+                self.assertTrue(path.is_file(), f"{path.name} must be a regular file")
+        on_disk = {path.name for path in entries}
+        self.assertEqual(expected - on_disk, set())
         self.assertEqual(on_disk - expected, set())
 
     def test_the_readme_embeds_both_themes_of_every_diagram(self):
