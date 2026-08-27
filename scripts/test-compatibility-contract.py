@@ -6,6 +6,7 @@ from __future__ import annotations
 import importlib.util
 import io
 import pathlib
+import re
 import shutil
 import tempfile
 import unittest
@@ -30,6 +31,12 @@ class CompatibilityContractTests(unittest.TestCase):
     def check(self, root: pathlib.Path) -> list[str]:
         _, _, errors = compatibility.check(root)
         return errors
+
+    def replace_header(self, path: pathlib.Path, field: str, value: str) -> None:
+        content = path.read_text(encoding="utf-8")
+        updated, count = re.subn(rf"^{re.escape(field)}:.*$", f"{field}: {value}", content, count=1, flags=re.MULTILINE)
+        self.assertEqual(count, 1)
+        path.write_text(updated, encoding="utf-8")
 
     def test_current_contract_passes(self) -> None:
         self.assertEqual(self.check(self.copied_root()), [])
@@ -78,6 +85,47 @@ class CompatibilityContractTests(unittest.TestCase):
         path = root / "published" / "healthcare-phi-pii" / "bundle.yaml"
         path.write_text(path.read_text(encoding="utf-8").replace("format_version: 1", "format_version: 1\nunknown_reader_field: true", 1), encoding="utf-8")
         self.assertTrue(any("unknown reader field" in error for error in self.check(root)))
+
+    def test_schema_rejects_required_header_wrong_types_and_empty_strings(self) -> None:
+        for field, value, expected in (
+            ("author", '""', "must not be empty"),
+            ("author", "1", "must be a string"),
+            ("description", '""', "must not be empty"),
+            ("license", "false", "must be a string"),
+            ("rules", '"not a sequence"', "must be a array"),
+        ):
+            with self.subTest(field=field, value=value):
+                root = self.copied_root()
+                path = root / "published" / "healthcare-phi-pii" / "bundle.yaml"
+                self.replace_header(path, field, value)
+                self.assertTrue(any(expected in error for error in self.check(root)))
+
+        root = self.copied_root()
+        path = root / "published" / "healthcare-phi-pii" / "bundle.yaml"
+        path.write_text(path.read_text(encoding="utf-8").replace(
+            'license: "Apache-2.0"', 'license: "Apache-2.0"\nmonotonic_version: 0', 1,
+        ), encoding="utf-8")
+        self.assertTrue(any("monotonic_version must be at least 1" in error for error in self.check(root)))
+
+    def test_schema_file_must_stay_beneath_compatibility(self) -> None:
+        for path in ("/tmp/schema.json", "compatibility/../published/pipelock-community/bundle.yaml"):
+            with self.subTest(path=path):
+                root = self.copied_root()
+                contract = root / "compatibility" / "contract.yaml"
+                contract.write_text(contract.read_text(encoding="utf-8").replace(
+                    "compatibility/pipelock-rules-format-v1.schema.json", path, 1,
+                ), encoding="utf-8")
+                self.assertTrue(any("schema_file must" in error for error in self.check(root)))
+
+    def test_bundle_name_must_stay_beneath_published(self) -> None:
+        for name in ("/tmp/bundle", "../compatibility"):
+            with self.subTest(name=name):
+                root = self.copied_root()
+                contract = root / "compatibility" / "contract.yaml"
+                contract.write_text(contract.read_text(encoding="utf-8").replace(
+                    "name: pipelock-community", f"name: {name}", 1,
+                ), encoding="utf-8")
+                self.assertTrue(any("bundle name must" in error for error in self.check(root)))
 
 
 if __name__ == "__main__":
