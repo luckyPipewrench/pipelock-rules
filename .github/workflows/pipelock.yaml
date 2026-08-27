@@ -29,6 +29,7 @@ jobs:
       - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
         with:
           fetch-depth: 0
+          persist-credentials: false
 
       # Fixtures and scripts are excluded because a fixture is a deliberate
       # sample of the thing being detected. Scanning them reports the corpus as
@@ -36,6 +37,7 @@ jobs:
       - name: Pipelock Scan
         uses: luckyPipewrench/pipelock@4c748ab986d611138ce202ab800b16eca6fb589f # v3.4.0
         with:
+          version: '3.4.0'
           scan-diff: 'true'
           fail-on-findings: 'true'
           test-vectors: 'false'

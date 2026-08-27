@@ -20,11 +20,6 @@ import re
 import tempfile
 import unittest
 
-import yaml
-
-# Every document parsed here is a string this same module just generated from a
-# literal template, so the stdlib parser never sees an untrusted document and
-# the repository keeps its stdlib-only tooling rule.
 import xml.etree.ElementTree as ElementTree
 from pathlib import Path
 
@@ -166,21 +161,6 @@ class WellFormedTest(unittest.TestCase):
                 self.assertTrue(colors <= approved, colors - approved)
 
 
-def _regex_values(node) -> list:
-    """Every string under a key named regex, at any depth."""
-    if isinstance(node, dict):
-        found = []
-        for key, value in node.items():
-            if key == "regex" and isinstance(value, str):
-                found.append(value)
-            else:
-                found += _regex_values(value)
-        return found
-    if isinstance(node, list):
-        return [value for item in node for value in _regex_values(item)]
-    return []
-
-
 class PatternSecrecyTest(unittest.TestCase):
     """No asset may carry a live detection pattern.
 
@@ -192,7 +172,7 @@ class PatternSecrecyTest(unittest.TestCase):
     """
 
     def _every_regex(self) -> list:
-        """Every rule pattern in the corpus, read with a YAML parser.
+        """Every rule pattern in the corpus, read by the production generator.
 
         The previous version searched the source text for `regex: \'...\'` at a
         fixed indent. That matches how every rule happens to be written today,
@@ -200,19 +180,9 @@ class PatternSecrecyTest(unittest.TestCase):
         pattern would be skipped silently and the check would go partial without
         reporting anything. Parsing sees a pattern however it is quoted.
         """
-        found = []
-        for bundle in generator.BUNDLES:
-            document = yaml.safe_load(
-                (generator.PUBLISHED_DIR / bundle / "bundle.yaml").read_text(encoding="utf-8"))
-            for rule in document.get("rules") or []:
-                # Walk the rule rather than reaching for a known key. The regex
-                # sits at rules[].pattern.regex, and the first version of this
-                # rewrite assumed rules[].regex and collected nothing. A gate
-                # that silently finds nothing is the failure mode being guarded
-                # against, so it takes every regex field wherever it is nested.
-                found += [(rule.get("id", "<unidentified>"), value)
-                          for value in _regex_values(rule)]
-        return found
+        return [(rule["id"], generator.regex_of(rule))
+                for bundle in generator.BUNDLES
+                for rule in generator.bundle_rules(bundle)]
 
     def _every_committed_surface(self) -> dict:
         """Everything both generators write, as text and as rendered text.
@@ -224,7 +194,8 @@ class PatternSecrecyTest(unittest.TestCase):
         what a parser hands back: both views are checked.
         """
         surfaces = {}
-        for path, content in list(generator.build().items()) + list(brand.build().items()):
+        for path in list(generator.build()) + list(brand.build()):
+            content = path.read_text(encoding="utf-8")
             surfaces[path.name] = content
             if path.suffix == ".svg":
                 try:
@@ -283,6 +254,38 @@ class PatternSecrecyTest(unittest.TestCase):
         rule["block"] = "      regex: '(?=lookahead)'\n"
         with self.assertRaises(SystemExit):
             generator.regex_shape(rule)
+
+
+class BrandProvenanceTest(unittest.TestCase):
+    """The raster gate fails cleanly on missing or replaced inputs."""
+
+    def setUp(self):
+        self.directory = tempfile.TemporaryDirectory()
+        self.saved_asset_dir = brand.ASSET_DIR
+        self.saved_exports = brand.PNG_EXPORTS
+        brand.ASSET_DIR = Path(self.directory.name)
+        brand.PNG_EXPORTS = {"preview.png": ("preview.svg", 1280)}
+        (brand.ASSET_DIR / "preview.svg").write_text("<svg/>\n", encoding="utf-8")
+        (brand.ASSET_DIR / "preview.png").write_bytes(b"png-one")
+        brand.sidecar("preview.png").write_text(
+            brand.raster_fingerprint(
+                brand.ASSET_DIR / "preview.png", brand.ASSET_DIR / "preview.svg"),
+            encoding="utf-8")
+
+    def tearDown(self):
+        brand.ASSET_DIR = self.saved_asset_dir
+        brand.PNG_EXPORTS = self.saved_exports
+        self.directory.cleanup()
+
+    def test_replaced_png_is_reported(self):
+        (brand.ASSET_DIR / "preview.png").write_bytes(b"png-two")
+        self.assertTrue(any("changed since export" in problem
+                            for problem in brand.raster_problems()))
+
+    def test_missing_source_svg_is_reported_without_raising(self):
+        (brand.ASSET_DIR / "preview.svg").unlink()
+        self.assertTrue(any("source assets/preview.svg is missing" in problem
+                            for problem in brand.raster_problems()))
 
 
 class ThemeParityTest(unittest.TestCase):

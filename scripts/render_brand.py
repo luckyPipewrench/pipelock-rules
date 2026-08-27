@@ -433,6 +433,12 @@ def sidecar(png: str) -> Path:
     return ASSET_DIR / f"{png}.source"
 
 
+def raster_fingerprint(png: Path, svg: Path) -> str:
+    """Bind a provenance record to normalized SVG source and exact PNG bytes."""
+    svg_bytes = svg.read_bytes().replace(b"\r\n", b"\n")
+    return f"svg {hashlib.sha256(svg_bytes).hexdigest()}\npng {hashlib.sha256(png.read_bytes()).hexdigest()}\n"
+
+
 def raster_problems() -> list[str]:
     """Rasters that are missing, or that came from an older vector.
 
@@ -448,16 +454,19 @@ def raster_problems() -> list[str]:
         if not raster.exists():
             problems.append(f"assets/{png}: missing; run 'make brand'")
             continue
+        vector = ASSET_DIR / svg
+        if not vector.exists():
+            problems.append(f"assets/{png}: source assets/{svg} is missing; run 'make brand'")
+            continue
         note = sidecar(png)
         if not note.exists():
             problems.append(
                 f"assets/{png}: no record of the vector it came from; "
                 "run 'make brand'")
             continue
-        want = hashlib.sha256((ASSET_DIR / svg).read_bytes()).hexdigest()
-        if note.read_text(encoding="utf-8").strip() != want:
+        if note.read_text(encoding="utf-8") != raster_fingerprint(raster, vector):
             problems.append(
-                f"assets/{png}: exported from an older assets/{svg}; "
+                f"assets/{png}: PNG or assets/{svg} changed since export; "
                 "re-export it and run 'make brand'")
     return problems
 
@@ -473,8 +482,13 @@ def main() -> int:
 
     if args.stamp_png:
         for png, (svg, _) in PNG_EXPORTS.items():
-            digest = hashlib.sha256((ASSET_DIR / svg).read_bytes()).hexdigest()
-            sidecar(png).write_text(digest + "\n", encoding="utf-8")
+            raster = ASSET_DIR / png
+            vector = ASSET_DIR / svg
+            if not raster.exists() or not vector.exists():
+                print(f"cannot stamp assets/{png}: raster or assets/{svg} missing",
+                      file=sys.stderr)
+                return 1
+            sidecar(png).write_text(raster_fingerprint(raster, vector), encoding="utf-8")
             print(f"stamped assets/{png}.source")
         return 0
 
@@ -504,7 +518,7 @@ def main() -> int:
         return 1
 
     for path, content in sorted(files.items()):
-        path.write_text(content, encoding="utf-8")
+        path.write_text(content, encoding="utf-8", newline="\n")
         print(f"wrote {path.relative_to(REPO_ROOT)}")
     return 0
 
