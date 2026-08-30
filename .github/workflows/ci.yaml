@@ -15,7 +15,7 @@ permissions:
 
 env:
   PIPELOCK_VERSION: "3.5.0"
-  PIPELOCK_CANDIDATE_REF: "314bbd1f28764f0729482f7e452a77a8e2d01392"
+  PIPELOCK_CANDIDATE_REF: "ca1c0b1cfe0ddfadd5ca43cb30dca1b9151b3919"
 
 jobs:
   validate:
