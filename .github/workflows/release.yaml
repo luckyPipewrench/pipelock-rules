@@ -10,6 +10,10 @@ on:
 permissions:
   contents: write
 
+env:
+  PIPELOCK_VERSION: "3.5.0"
+  PIPELOCK_CANDIDATE_REF: "ca1c0b1cfe0ddfadd5ca43cb30dca1b9151b3919"
+
 jobs:
   release:
     name: Publish signed bundles
@@ -24,18 +28,27 @@ jobs:
       # against the pinned official key at release time. Asset presence is not
       # verification: a stale compile or a signature over older content would
       # otherwise ship as official and fail the documented install flow.
-      - name: Install pipelock
+      - name: Set up Go for the tested Pipelock candidate
+        uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e  # v7.0.0
+        with:
+          go-version: '1.26'
+          cache: false
+
+      - name: Check out the tested Pipelock candidate
+        uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0  # v7.0.0
+        with:
+          repository: luckyPipewrench/pipelock
+          ref: ${{ env.PIPELOCK_CANDIDATE_REF }}
+          path: .pipelock-candidate
+          persist-credentials: false
+
+      - name: Build the tested Pipelock candidate
         run: |
           set -euo pipefail
-          PIPELOCK_VERSION=3.4.0
-          PIPELOCK_SHA256=37c267a9c7a5472324e3bb07def179e810a5ae7c8e761537ad1e9b2e32e9abac
-          RELEASE_URL="https://github.com/luckyPipewrench/pipelock/releases/download/v${PIPELOCK_VERSION}"
-          ARCHIVE="pipelock_${PIPELOCK_VERSION}_linux_amd64.tar.gz"
-          curl -fsSLo "/tmp/${ARCHIVE}" "${RELEASE_URL}/${ARCHIVE}"
-          printf '%s  %s\n' "$PIPELOCK_SHA256" "/tmp/${ARCHIVE}" | sha256sum -c -
-          tar xzf "/tmp/${ARCHIVE}" -C /usr/local/bin pipelock
-          rm -f "/tmp/${ARCHIVE}"
-          pipelock --version
+          test "$(git -C .pipelock-candidate rev-parse HEAD)" = "$PIPELOCK_CANDIDATE_REF"
+          make -C .pipelock-candidate VERSION="$PIPELOCK_VERSION" GIT_COMMIT="$PIPELOCK_CANDIDATE_REF" build
+          install -m 0755 .pipelock-candidate/pipelock /usr/local/bin/pipelock
+          test "$(pipelock --version)" = "pipelock version $PIPELOCK_VERSION"
 
       - name: Verify published bundles are current and signed
         env:

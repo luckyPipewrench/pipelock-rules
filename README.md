@@ -11,7 +11,7 @@
   <a href="https://github.com/luckyPipewrench/pipelock-rules/actions/workflows/codeql.yaml"><img src="https://github.com/luckyPipewrench/pipelock-rules/actions/workflows/codeql.yaml/badge.svg" alt="CodeQL"></a>
   <a href="https://github.com/luckyPipewrench/pipelock-rules/actions/workflows/pipelock.yaml"><img src="https://github.com/luckyPipewrench/pipelock-rules/actions/workflows/pipelock.yaml/badge.svg" alt="Pipelock Security Scan"></a>
   <a href="https://scorecard.dev/viewer/?uri=github.com/luckyPipewrench/pipelock-rules"><img src="https://api.scorecard.dev/projects/github.com/luckyPipewrench/pipelock-rules/badge" alt="OpenSSF Scorecard"></a>
-  <a href="https://github.com/luckyPipewrench/pipelock"><img src="https://img.shields.io/badge/tested_with_Pipelock-v3.4.0-00e5a0?labelColor=0e0e11" alt="Tested with Pipelock v3.4.0"></a>
+  <a href="https://github.com/luckyPipewrench/pipelock"><img src="https://img.shields.io/badge/tested_with_Pipelock-v3.5.0-00e5a0?labelColor=0e0e11" alt="Tested with Pipelock v3.5.0"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/License-Apache_2.0-00e5a0?labelColor=0e0e11" alt="License: Apache 2.0"></a>
   <a href="https://discord.gg/badNfhGKTc"><img src="https://img.shields.io/badge/Discord-Join-5865F2?logo=discord&logoColor=white&labelColor=0e0e11" alt="Discord"></a>
 </p>
@@ -162,7 +162,7 @@ See the [full bundle authoring guide](https://github.com/luckyPipewrench/pipeloc
 
 ## Compatibility contract
 
-The maintained bundles are tested from their declared `min_pipelock` through Pipelock `3.4.0`. A newer Pipelock release sits outside this tested range. It should warn and continue unless it cannot read the bundle format. Pipelock `3.4.0` does not expose that warning yet, so `compatibility/contract.yaml` records the tested ceiling until a product update adds it.
+The maintained bundles are tested from their declared `min_pipelock` through Pipelock `3.5.0`. A newer Pipelock release sits outside this tested range. It should warn and continue unless it can't read the bundle format. Pipelock `3.5.0` doesn't expose that warning yet, so `compatibility/contract.yaml` records the tested ceiling until a product update adds it.
 
 The contract binds each published bundle's name, CalVer, minimum version, and `format_version` to a SHA-256-pinned reader-schema identity. The two bundles named in the contract add detections. They don't carry per-rule allow or block actions, and they can't replace built-in patterns. Format 1 has no monotonic rollback counter. The installer refuses a same-version digest change.
 
