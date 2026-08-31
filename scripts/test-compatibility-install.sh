@@ -3,13 +3,35 @@
 # that incompatible format/minimum claims are rejected before installation.
 set -euo pipefail
 
+parse_pipelock_core_version() {
+	local output="$1"
+	local semver_core='(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)'
+	local prerelease='(0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(\.(0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*'
+	local version_re="^pipelock version v?(${semver_core})(-${prerelease})?$"
+
+	[[ "$output" =~ $version_re ]] || return 1
+	printf '%s\n' "${BASH_REMATCH[1]}"
+}
+
+if [[ "${1:-}" == "--parse-version" ]]; then
+	[[ $# -eq 2 ]] || { printf 'usage: %s --parse-version OUTPUT\n' "$0" >&2; exit 2; }
+	parse_pipelock_core_version "$2"
+	exit
+fi
+
 root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 tmp_root="${TMPDIR:-/tmp}"
 mkdir -p "$tmp_root"
 tmp="$(mktemp -d "$tmp_root/pipelock-rules-compat.XXXXXX")"
 trap 'rm -rf "$tmp"' EXIT
-actual_version="$(pipelock --version | sed -n 's/^pipelock version \([0-9][0-9.]*\)$/\1/p')"
-[[ -n "$actual_version" ]] || { printf 'compatibility install: FAIL - cannot read pipelock version\n' >&2; exit 1; }
+version_output="$(pipelock --version)" || {
+	printf 'compatibility install: FAIL - cannot read pipelock version\n' >&2
+	exit 1
+}
+actual_version="$(parse_pipelock_core_version "$version_output")" || {
+	printf 'compatibility install: FAIL - cannot read pipelock version\n' >&2
+	exit 1
+}
 
 install_case() {
 	local name="$1" source="$2" expected="$3"
