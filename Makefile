@@ -58,6 +58,7 @@ check-diagrams:
 check-compatibility: require-pipelock
 	@PYTHONDONTWRITEBYTECODE=1 python3 -m unittest scripts/test-compatibility-contract.py
 	@python3 scripts/check-compatibility-contract.py
+	@./scripts/test-compatibility-install-version.sh
 	@./scripts/test-compatibility-install.sh
 
 require-pipelock:
