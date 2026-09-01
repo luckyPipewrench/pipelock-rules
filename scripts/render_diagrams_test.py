@@ -389,6 +389,37 @@ class BundleAgreementTest(unittest.TestCase):
             problems = generator.verify_against_corpus()
         self.assertTrue(any("badge advertises" in p for p in problems), problems)
 
+    def test_ci_and_release_pin_the_same_pipelock_candidate(self):
+        self.assertEqual(
+            generator.pipelock_candidate_ref(),
+            "24f823d4194d69daa60e4ddce0bdc8f005bb1e1b",
+        )
+
+    def test_different_ci_and_release_candidate_refs_are_rejected(self):
+        with tempfile.TemporaryDirectory() as directory:
+            ci = Path(directory) / "ci.yaml"
+            release = Path(directory) / "release.yaml"
+            ci.write_text("env:\n  PIPELOCK_CANDIDATE_REF: \"" + "a" * 40 + "\"\n", encoding="utf-8")
+            release.write_text("env:\n  PIPELOCK_CANDIDATE_REF: \"" + "b" * 40 + "\"\n", encoding="utf-8")
+            with _swap("CI_WORKFLOW", ci), _swap("RELEASE_WORKFLOW", release):
+                with self.assertRaisesRegex(SystemExit, "pin different Pipelock candidate"):
+                    generator.pipelock_candidate_ref()
+
+    def test_missing_or_malformed_candidate_ref_is_rejected(self):
+        cases = ("env:\n", "env:\n  PIPELOCK_CANDIDATE_REF: not-a-commit\n")
+        for content in cases:
+            with self.subTest(content=content), tempfile.TemporaryDirectory() as directory:
+                ci = Path(directory) / "ci.yaml"
+                release = Path(directory) / "release.yaml"
+                ci.write_text(content, encoding="utf-8")
+                release.write_text(
+                    "env:\n  PIPELOCK_CANDIDATE_REF: \"" + "a" * 40 + "\"\n",
+                    encoding="utf-8",
+                )
+                with _swap("CI_WORKFLOW", ci), _swap("RELEASE_WORKFLOW", release):
+                    with self.assertRaises(SystemExit):
+                        generator.pipelock_candidate_ref()
+
     def test_a_readme_that_lost_its_badge_is_reported(self):
         with _swap("readme_badge_version", lambda: None):
             problems = generator.verify_against_corpus()
