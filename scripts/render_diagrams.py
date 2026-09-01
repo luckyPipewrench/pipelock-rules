@@ -37,6 +37,7 @@ RULES_DIR = REPO_ROOT / "rules"
 FIXTURE_DIR = REPO_ROOT / "fixtures"
 README = REPO_ROOT / "README.md"
 CI_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "ci.yaml"
+RELEASE_WORKFLOW = REPO_ROOT / ".github" / "workflows" / "release.yaml"
 OFFICIAL_PUBKEY = REPO_ROOT / ".github" / "rules-official" / "pipelock-official.pub"
 CATALOG = REPO_ROOT / "docs" / "rule-catalog.md"
 
@@ -248,6 +249,23 @@ def ci_pipelock_version() -> str:
     if len(declared) != 1:
         _fail("ci.yaml installs more than one Pipelock version: " + repr(sorted(declared)))
     return declared.pop()
+
+
+def pipelock_candidate_ref() -> str:
+    """Exact Pipelock commit both CI and release build and validate."""
+    declared = {}
+    pattern = re.compile(r"^[ \t]+PIPELOCK_CANDIDATE_REF:[ \t]*[\"']?([^\s\"']+)", re.M)
+    for workflow in (CI_WORKFLOW, RELEASE_WORKFLOW):
+        values = pattern.findall(workflow.read_text(encoding="utf-8"))
+        label = workflow.name
+        if len(values) != 1:
+            _fail(f"{label} must declare exactly one PIPELOCK_CANDIDATE_REF")
+        if re.fullmatch(r"[0-9a-f]{40}", values[0]) is None:
+            _fail(f"{label} PIPELOCK_CANDIDATE_REF must be a lowercase 40-hex commit")
+        declared[label] = values[0]
+    if len(set(declared.values())) != 1:
+        _fail("ci.yaml and release.yaml pin different Pipelock candidate commits")
+    return next(iter(declared.values()))
 
 
 def ci_compatibility_floors() -> dict:
@@ -1006,6 +1024,9 @@ def _strings_of(svg: str) -> list:
 def verify_against_corpus() -> list:
     """Report drawings and README claims that no longer match the repository."""
     problems = []
+
+    # The tag workflow must release the exact Pipelock candidate CI proved.
+    pipelock_candidate_ref()
 
     for bundle in BUNDLES:
         rules = bundle_rules(bundle)

@@ -12,7 +12,7 @@ permissions:
 
 env:
   PIPELOCK_VERSION: "3.5.0"
-  PIPELOCK_CANDIDATE_REF: "3dfe272111ee9bc1a53fa9886fdcec04925034e4"
+  PIPELOCK_CANDIDATE_REF: "24f823d4194d69daa60e4ddce0bdc8f005bb1e1b"
 
 jobs:
   release:
