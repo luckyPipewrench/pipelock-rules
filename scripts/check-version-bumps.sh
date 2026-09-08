@@ -3,6 +3,9 @@
 # prevent a published bundle name/version identity from changing its bytes.
 set -euo pipefail
 
+# Compare stored release objects even when a local checkout has replacement refs.
+export GIT_NO_REPLACE_OBJECTS=1
+
 component_cmp=0
 
 compare_version_component() {
@@ -232,9 +235,11 @@ check_published_identity() {
 
 # A non-shallow clone can still omit tags (for example, clone --no-tags).
 # Compare tag objects, not just names, with the same origin used by CI.
+# The caller owns Git configuration and must not mutate refs during this check.
+# CI uses a fresh checkout; locally this checks uncommitted working-tree edits.
 verify_release_tags() {
 	local remote_tags remote_oid ref local_oid
-	if ! remote_tags="$(git ls-remote --refs origin 'refs/tags/v*')"; then
+	if ! remote_tags="$(GIT_TERMINAL_PROMPT=0 timeout --kill-after=5s 30s bash -c 'git "$@"' -- ls-remote --refs origin 'refs/tags/v*')"; then
 		printf 'ERROR: cannot verify release tags against origin; check remote access and retry\n' >&2
 		return 1
 	fi

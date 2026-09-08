@@ -169,6 +169,12 @@ git -C "$directory" update-ref refs/tags/v2.0.0 "$commit"
 sed -i 's/rules: \[\]/rules: [changed]/' "$directory/published/demo/bundle.yaml"
 expect_gate fail "$directory"
 
+# A local replacement must not hide an off-branch release's reserved identity.
+git -C "$directory" update-ref "refs/replace/$commit" HEAD
+expect_gate fail "$directory"
+git -C "$directory" show HEAD:published/demo/bundle.yaml >"$directory/published/demo/bundle.yaml"
+expect_gate pass "$directory"
+
 directory="$(fixture)"
 mv "$directory/published/demo" "$directory/retained-demo"
 expect_gate fail "$directory"
@@ -252,6 +258,22 @@ for GATE_FAIL_SUBCOMMAND in tag ls-tree hash-object diff show rev-parse ls-remot
 	unset -f git
 done
 unset GATE_FAIL_SUBCOMMAND
+
+# A stalled transport must fail within the local deadline, with prompts disabled.
+git() {
+	if [[ "$1" == ls-remote ]]; then
+		[[ "${GIT_TERMINAL_PROMPT:-}" == 0 ]] || return 94
+		sleep 60
+		return 0
+	fi
+	command git "$@"
+}
+export -f git
+started=$SECONDS
+expect_gate fail "$directory"
+[[ $((SECONDS - started)) -ge 30 && $((SECONDS - started)) -lt 45 ]]
+unset -f git
+
 find() { return 93; }
 export -f find
 expect_gate fail "$directory"
