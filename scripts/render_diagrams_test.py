@@ -667,20 +667,27 @@ class CommittedAssetTest(unittest.TestCase):
         generators write here now, so this asks both rather than being widened
         to tolerate whatever it finds: an unclaimed file is still a defect.
         """
-        expected = {path.name for path in generator.build()
+        def rel(path):
+            return path.relative_to(generator.ASSET_DIR).as_posix()
+
+        expected = {rel(path) for path in generator.build()
                     if path.parent == generator.ASSET_DIR}
-        expected |= {path.name for path in brand.build()}
-        expected |= set(brand.PNG_EXPORTS)
+        expected |= {rel(path) for path in brand.build()}
+        tracked = set(brand.PNG_EXPORTS) | {brand.ICO_NAME}
+        expected |= tracked
         # Each raster records the vector it was exported from, so check-brand can
         # tell a current PNG from one left over by an earlier mark.
-        expected |= {f"{png}.source" for png in brand.PNG_EXPORTS}
+        expected |= {f"{name}.source" for name in tracked}
         expected.add(brand.MARK.name)          # the committed master
-        entries = list(generator.ASSET_DIR.iterdir())
+        # Rasters live in a subdirectory now, so this walks rather than listing
+        # one level; a bare-name comparison could also not tell two files apart
+        # that share a basename in different directories.
+        entries = [path for path in generator.ASSET_DIR.rglob("*") if not path.is_dir()]
         for path in entries:
-            with self.subTest(asset=path.name):
-                self.assertFalse(path.is_symlink(), f"{path.name} must not be a symlink")
-                self.assertTrue(path.is_file(), f"{path.name} must be a regular file")
-        on_disk = {path.name for path in entries}
+            with self.subTest(asset=rel(path)):
+                self.assertFalse(path.is_symlink(), f"{rel(path)} must not be a symlink")
+                self.assertTrue(path.is_file(), f"{rel(path)} must be a regular file")
+        on_disk = {rel(path) for path in entries}
         self.assertEqual(expected - on_disk, set())
         self.assertEqual(on_disk - expected, set())
 

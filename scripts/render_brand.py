@@ -318,9 +318,23 @@ ASSETS = {
 }
 
 # Rasters exported from the vectors above by `make brand`.
+#
+# Every size a consumer has asked for is listed here rather than exported by
+# hand into whatever tool needed it. A hand export is how a logo ends up as a
+# mark stranded in the corner of a canvas: it looks fine in the exporter and
+# renders as a blank square everywhere else, and nothing catches it because the
+# file exists and has plausible bytes.
+ICON_SIZES = (16, 32, 48, 64, 128, 256, 512, 1024)
+ICO_SIZES = (16, 32, 48, 64, 128, 256)
+ICO_NAME = "icons/pipelock-rules.ico"
+
 PNG_EXPORTS = {
     "pipelock-rules-logo-256.png": ("pipelock-rules-logo.svg", 256),
     "social-preview.png": ("social-preview.svg", 1280),
+    **{
+        f"icons/pipelock-rules-logo-{size}.png": ("pipelock-rules-logo.svg", size)
+        for size in ICON_SIZES
+    },
 }
 
 
@@ -500,7 +514,8 @@ def raster_problems() -> list[str]:
     the recorded digest rather than re-rasterising to compare.
     """
     problems = []
-    for png, (svg, _) in PNG_EXPORTS.items():
+    checks = list(PNG_EXPORTS.items()) + [(ICO_NAME, ("pipelock-rules-logo.svg", 0))]
+    for png, (svg, _) in checks:
         raster = ASSET_DIR / png
         if not raster.exists():
             problems.append(f"assets/{png}: missing; run 'make brand'")
@@ -522,6 +537,76 @@ def raster_problems() -> list[str]:
     return problems
 
 
+def _require_tool(name: str, purpose: str, alternative: str | None = None) -> str:
+    """Resolve an external renderer, or refuse before any output is written."""
+    import shutil
+
+    found = shutil.which(name) or (shutil.which(alternative) if alternative else None)
+    if found is None:
+        wanted = name if alternative is None else f"{name} (or {alternative})"
+        raise SystemExit(f"render_brand: {wanted} is required to {purpose}")
+    return found
+
+
+def _rasterize(svg: Path, png: Path, width: int) -> None:
+    """Render one vector to a transparent PNG at an exact width."""
+    import shutil
+    import subprocess
+
+    inkscape = _require_tool("inkscape", "export rasters")
+    png.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run(
+        [inkscape, str(svg), "-o", str(png), "-w", str(width)],
+        check=True, capture_output=True)
+
+
+def _write_ico(pngs: list[Path], target: Path) -> None:
+    """Bundle the small ladder sizes into one multi-resolution icon."""
+    import shutil
+    import subprocess
+
+    magick = _require_tool("magick", "build the icon bundle", alternative="convert")
+    target.parent.mkdir(parents=True, exist_ok=True)
+    subprocess.run([magick, *[str(p) for p in pngs], str(target)],
+                   check=True, capture_output=True)
+
+
+def render_rasters() -> int:
+    """Export every raster from its vector and record where it came from.
+
+    The size map lives in PNG_EXPORTS and nowhere else. It used to be repeated
+    as literal inkscape lines in the Makefile, which meant adding a size in one
+    place and silently not exporting it from the other.
+
+    Both renderers are resolved before anything is written. Finding ImageMagick
+    missing only at the bundling step would leave every PNG already overwritten
+    and no icon bundle beside them, which is a worse state to land in than
+    refusing at the start.
+    """
+    _require_tool("inkscape", "export rasters")
+    _require_tool("magick", "build the icon bundle", alternative="convert")
+
+    ladder = []
+    for png, (svg, width) in PNG_EXPORTS.items():
+        raster = ASSET_DIR / png
+        vector = ASSET_DIR / svg
+        if not vector.exists():
+            print(f"cannot export assets/{png}: assets/{svg} missing", file=sys.stderr)
+            return 1
+        _rasterize(vector, raster, width)
+        sidecar(png).write_text(raster_fingerprint(raster, vector), encoding="utf-8")
+        print(f"exported assets/{png}")
+        if png.startswith("icons/") and width in ICO_SIZES:
+            ladder.append((width, raster))
+
+    ico = ASSET_DIR / ICO_NAME
+    _write_ico([p for _, p in sorted(ladder)], ico)
+    sidecar(ICO_NAME).write_text(
+        raster_fingerprint(ico, ASSET_DIR / "pipelock-rules-logo.svg"), encoding="utf-8")
+    print(f"exported assets/{ICO_NAME}")
+    return 0
+
+
 def main() -> int:
     """Write the brand assets, or with --check compare without writing."""
     parser = argparse.ArgumentParser(description=__doc__)
@@ -529,7 +614,12 @@ def main() -> int:
                         help="compare committed assets without writing")
     parser.add_argument("--stamp-png", action="store_true",
                         help="record the SVG digest each exported raster was made from")
+    parser.add_argument("--render-rasters", action="store_true",
+                        help="export every raster from its vector, then stamp provenance")
     args = parser.parse_args()
+
+    if args.render_rasters:
+        return render_rasters()
 
     if args.stamp_png:
         for png, (svg, _) in PNG_EXPORTS.items():

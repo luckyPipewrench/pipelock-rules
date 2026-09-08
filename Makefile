@@ -33,11 +33,7 @@ brand:
 		exit 1; \
 	}
 	@python3 scripts/render_brand.py
-	@set -e; \
-	inkscape assets/pipelock-rules-logo.svg -o assets/pipelock-rules-logo-256.png -w 256 >/dev/null; \
-	inkscape assets/social-preview.svg -o assets/social-preview.png -w 1280 >/dev/null; \
-	python3 scripts/render_brand.py --stamp-png; \
-	echo "exported rasters"
+	@python3 scripts/render_brand.py --render-rasters
 
 # Fail when a brand asset drifts from the master mark, the mark stops following
 # the brand rules, or the README shows a badge for a workflow that is gone.
