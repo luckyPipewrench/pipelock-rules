@@ -265,7 +265,7 @@ verify_release_tags() {
 			printf 'ERROR: release tag %s is missing or differs from origin; fetch release tags and retry\n' "$ref" >&2
 			return 1
 		fi
-		peeled_oid="$(git rev-parse --verify "$ref^{}" 2>/dev/null)" || return 1
+		peeled_oid="$(git rev-parse --verify "$remote_oid^{}" 2>/dev/null)" || return 1
 		tag_name="${ref#refs/tags/}"
 		verified_release_tags+="${verified_release_tags:+$'\n'}${peeled_oid}"$'\t'"${tag_name}"
 	done <<< "$remote_tags"

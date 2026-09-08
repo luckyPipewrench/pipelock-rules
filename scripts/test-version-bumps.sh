@@ -189,6 +189,8 @@ commit="$(git -C "$origin" commit-tree "$tree" -m off-branch-release)"
 git -C "$origin" update-ref refs/tags/v2.0.0 "$commit"
 directory="$(mktemp -d "$test_root/fixture.XXXXXX")"
 git clone --quiet --no-tags "$origin" "$directory"
+git -C "$directory" config user.email rules-test@example.invalid
+git -C "$directory" config user.name 'Rules version test'
 [[ "$(git -C "$directory" rev-parse --is-shallow-repository)" == false ]]
 expect_gate fail "$directory"
 git -C "$directory" fetch --quiet --tags origin
@@ -218,6 +220,18 @@ expect_gate pass "$directory"
 
 git -C "$directory" remote set-url origin "$directory/missing-origin"
 expect_gate fail "$directory"
+
+# Tag peeling must use the verified object ID, never reread a mutable tag ref.
+directory="$(fixture)"
+git() {
+	if [[ "$1" == rev-parse && "${3:-}" == refs/tags/*'^{}' ]]; then
+		return 93
+	fi
+	command git "$@"
+}
+export -f git
+expect_gate pass "$directory"
+unset -f git
 
 # Link targets can have identical bytes while Git stores a different object.
 directory="$(fixture)"
