@@ -537,16 +537,23 @@ def raster_problems() -> list[str]:
     return problems
 
 
+def _require_tool(name: str, purpose: str, alternative: str | None = None) -> str:
+    """Resolve an external renderer, or refuse before any output is written."""
+    import shutil
+
+    found = shutil.which(name) or (shutil.which(alternative) if alternative else None)
+    if found is None:
+        wanted = name if alternative is None else f"{name} (or {alternative})"
+        raise SystemExit(f"render_brand: {wanted} is required to {purpose}")
+    return found
+
+
 def _rasterize(svg: Path, png: Path, width: int) -> None:
     """Render one vector to a transparent PNG at an exact width."""
     import shutil
     import subprocess
 
-    inkscape = shutil.which("inkscape")
-    if inkscape is None:
-        raise SystemExit(
-            "render_brand: inkscape is required to export rasters; "
-            "install it or leave the committed PNGs untouched")
+    inkscape = _require_tool("inkscape", "export rasters")
     png.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run(
         [inkscape, str(svg), "-o", str(png), "-w", str(width)],
@@ -558,9 +565,7 @@ def _write_ico(pngs: list[Path], target: Path) -> None:
     import shutil
     import subprocess
 
-    magick = shutil.which("magick") or shutil.which("convert")
-    if magick is None:
-        raise SystemExit("render_brand: ImageMagick is required to build the .ico")
+    magick = _require_tool("magick", "build the icon bundle", alternative="convert")
     target.parent.mkdir(parents=True, exist_ok=True)
     subprocess.run([magick, *[str(p) for p in pngs], str(target)],
                    check=True, capture_output=True)
@@ -572,7 +577,15 @@ def render_rasters() -> int:
     The size map lives in PNG_EXPORTS and nowhere else. It used to be repeated
     as literal inkscape lines in the Makefile, which meant adding a size in one
     place and silently not exporting it from the other.
+
+    Both renderers are resolved before anything is written. Finding ImageMagick
+    missing only at the bundling step would leave every PNG already overwritten
+    and no icon bundle beside them, which is a worse state to land in than
+    refusing at the start.
     """
+    _require_tool("inkscape", "export rasters")
+    _require_tool("magick", "build the icon bundle", alternative="convert")
+
     ladder = []
     for png, (svg, width) in PNG_EXPORTS.items():
         raster = ASSET_DIR / png
