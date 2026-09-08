@@ -99,6 +99,62 @@ bundle_identity_from_git() {
 	bundle_identity_from_content "$content"
 }
 
+# Filesystem reads follow links while Git hashes the stored link text. Require
+# real bundle directories and regular files before comparing either view.
+validate_worktree_layout() {
+	local root entry links
+	for root in rules published; do
+		[[ -e "$root" || -L "$root" ]] || continue
+		if [[ -L "$root" || ! -d "$root" ]]; then
+			printf 'ERROR: %s must be a real directory\n' "$root" >&2
+			return 1
+		fi
+		links="$(find "$root" -type l -print)" || return 1
+		if [[ -n "$links" ]]; then
+			printf 'ERROR: symbolic links are not supported under %s\n' "$root" >&2
+			return 1
+		fi
+		for entry in "$root"/* "$root"/.[!.]* "$root"/..?*; do
+			[[ -e "$entry" ]] || continue
+			if [[ ! -d "$entry" ]]; then
+				printf 'ERROR: %s must be a bundle directory\n' "$entry" >&2
+				return 1
+			fi
+			if [[ "$root" == published && ! -f "$entry/bundle.yaml" ]]; then
+				printf 'ERROR: %s/bundle.yaml must be a regular file\n' "$entry" >&2
+				return 1
+			fi
+		done
+	done
+}
+
+validate_history_layout() {
+	local ref="$1" root entries mode type object name bundle_entries
+	for root in rules published; do
+		entries="$(git ls-tree "$ref" -- "$root")" || return 1
+		[[ -n "$entries" ]] || continue
+		read -r mode type object name <<< "$entries"
+		[[ "$mode" == 040000 && "$type" == tree ]] || {
+			printf 'ERROR: %s:%s is not a directory\n' "$ref" "$root" >&2; return 1;
+		}
+		entries="$(git ls-tree "$ref:$root")" || return 1
+		while read -r mode type object name; do
+			[[ -n "$mode" ]] || continue
+			if [[ "$mode" != 040000 || "$type" != tree || ! "$name" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
+				printf 'ERROR: unsupported bundle entry in %s:%s\n' "$ref" "$root" >&2
+				return 1
+			fi
+			[[ "$root" == published ]] || continue
+			bundle_entries="$(git ls-tree "$ref:$root/$name" -- bundle.yaml)" || return 1
+			read -r mode type object name <<< "$bundle_entries"
+			if [[ "$type" != blob || ( "$mode" != 100644 && "$mode" != 100755 ) ]]; then
+				printf 'ERROR: %s has a missing or non-regular published bundle.yaml\n' "$ref" >&2
+				return 1
+			fi
+		done <<< "$entries"
+	done
+}
+
 bundle_names() {
 	local base_ref="$1" root="$2" current_names="" base_names="" base_entry
 	if [[ -d "$root" ]]; then
@@ -116,7 +172,7 @@ check_published_identity() {
 	local current_file="published/$bundle/bundle.yaml"
 	local base_file="$base_ref:$current_file" current_blob base_blob tag tag_path tag_blob
 	local current_name current_version historical_name historical_version base_path tag_paths
-	if [[ ! -f "$current_file" ]]; then
+	if [[ -L "$current_file" || ! -f "$current_file" ]]; then
 		printf 'ERROR: published/%s/bundle.yaml was removed\n' "$bundle" >&2
 		return 1
 	fi
@@ -197,7 +253,7 @@ main() {
 		return 2
 	fi
 	local base_ref="$1" status=0 bundle current_file current_version previous_version
-	local source_bundles published_bundles tags shallow base_path diff_status
+	local source_bundles published_bundles tags shallow base_path diff_status tag
 	if ! git cat-file -e "${base_ref}^{commit}" 2>/dev/null; then
 		printf 'ERROR: base ref is unavailable: %s\n' "$base_ref" >&2
 		return 1
@@ -208,10 +264,16 @@ main() {
 		return 1
 	fi
 	verify_release_tags || return 1
+	validate_worktree_layout || return 1
+	validate_history_layout "$base_ref" || return 1
 	source_bundles="$(bundle_names "$base_ref" rules)" || { printf 'ERROR: cannot enumerate source bundles\n' >&2; return 1; }
 	published_bundles="$(bundle_names "$base_ref" published)" || { printf 'ERROR: cannot enumerate published bundles\n' >&2; return 1; }
 	# Every v* tag is a release input, including releases off the base ancestry.
 	tags="$(git tag --list 'v*')" || { printf 'ERROR: cannot enumerate release tags\n' >&2; return 1; }
+	while IFS= read -r tag; do
+		[[ -n "$tag" ]] || continue
+		validate_history_layout "$tag" || return 1
+	done <<< "$tags"
 	while IFS= read -r bundle; do
 		[[ -n "$bundle" ]] || continue
 		if git diff --quiet "$base_ref" -- "rules/$bundle"; then

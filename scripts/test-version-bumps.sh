@@ -49,12 +49,16 @@ expect_not_gt 1.2.2 1.2.3
 expect_not_gt 1.2.3-rc1 1.2.2
 expect_not_gt 1.2 1.1.9
 
+# One owned root lets EXIT clean every fixture, including assertion failures.
+test_root="$(mktemp -d "${TMPDIR:-/tmp}/pipelock-rules-version-bumps.XXXXXX")"
+trap 'rm -rf -- "$test_root"' EXIT
+
 fixture() {
 	local directory base_version="1.0.0"
 	if [[ $# -gt 0 ]]; then
 		base_version="$1"
 	fi
-	directory="$(mktemp -d "${TMPDIR:-/tmp}/pipelock-rules-version-bumps.XXXXXX")"
+	directory="$(mktemp -d "$test_root/fixture.XXXXXX")"
 	git -C "$directory" init -q
 	git -C "$directory" config user.email rules-test@example.invalid
 	git -C "$directory" config user.name 'Rules version test'
@@ -177,7 +181,7 @@ git -C "$origin" add published/demo/bundle.yaml
 tree="$(git -C "$origin" write-tree)"
 commit="$(git -C "$origin" commit-tree "$tree" -m off-branch-release)"
 git -C "$origin" update-ref refs/tags/v2.0.0 "$commit"
-directory="$(mktemp -d "${TMPDIR:-/tmp}/pipelock-rules-version-bumps.XXXXXX")"
+directory="$(mktemp -d "$test_root/fixture.XXXXXX")"
 git clone --quiet --no-tags "$origin" "$directory"
 [[ "$(git -C "$directory" rev-parse --is-shallow-repository)" == false ]]
 expect_gate fail "$directory"
@@ -197,6 +201,43 @@ git -C "$directory" update-ref refs/tags/v2.0.0 "$commit"
 expect_gate pass "$directory"
 git -C "$directory" remote set-url origin "$directory/missing-origin"
 expect_gate fail "$directory"
+
+# Link targets can have identical bytes while Git stores a different object.
+directory="$(fixture)"
+mv "$directory/published/demo/bundle.yaml" "$directory/original-bundle"
+ln -s ../../original-bundle "$directory/published/demo/bundle.yaml"
+expect_gate fail "$directory"
+
+for root_dir in rules published; do
+	directory="$(fixture)"
+	ln -s demo "$directory/$root_dir/alias"
+	expect_gate fail "$directory"
+	directory="$(fixture)"
+	mv "$directory/$root_dir" "$directory/real-root"
+	ln -s real-root "$directory/$root_dir"
+	expect_gate fail "$directory"
+	directory="$(fixture)"
+	printf 'unsupported' >"$directory/$root_dir/extra"
+	expect_gate fail "$directory"
+done
+
+# Refuse special files before any source-change path reads bundle contents.
+directory="$(fixture)"
+mv "$directory/published/demo/bundle.yaml" "$directory/original-bundle"
+mkfifo "$directory/published/demo/bundle.yaml"
+printf 'changed' >"$directory/rules/demo/dlp/example.yaml"
+expect_gate fail "$directory"
+
+# Historical modes must not be interpreted as the content of a regular bundle.
+for linked_path in published/demo/bundle.yaml published/demo rules/demo; do
+	directory="$(fixture)"
+	blob="$(printf 'target' | git -C "$directory" hash-object -w --stdin)"
+	git -C "$directory" update-index --add --replace --cacheinfo 120000 "$blob" "$linked_path"
+	tree="$(git -C "$directory" write-tree)"
+	commit="$(git -C "$directory" commit-tree "$tree" -m linked-release)"
+	git -C "$directory" update-ref refs/tags/v2.0.0 "$commit"
+	expect_gate fail "$directory"
+done
 
 # Failed history or filesystem queries must never become empty successful scans.
 directory="$(fixture)"
