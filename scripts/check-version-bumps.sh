@@ -174,6 +174,23 @@ check_published_identity() {
 	return 0
 }
 
+# A non-shallow clone can still omit tags (for example, clone --no-tags).
+# Compare tag objects, not just names, with the same origin used by CI.
+verify_release_tags() {
+	local remote_tags remote_oid ref local_oid
+	if ! remote_tags="$(git ls-remote --refs origin 'refs/tags/v*')"; then
+		printf 'ERROR: cannot verify release tags against origin; check remote access and retry\n' >&2
+		return 1
+	fi
+	while IFS=$'\t' read -r remote_oid ref; do
+		[[ -n "$remote_oid" ]] || continue
+		if ! local_oid="$(git rev-parse --verify "$ref" 2>/dev/null)" || [[ "$local_oid" != "$remote_oid" ]]; then
+			printf 'ERROR: release tag %s is missing or differs from origin; fetch release tags and retry\n' "$ref" >&2
+			return 1
+		fi
+	done <<< "$remote_tags"
+}
+
 main() {
 	if [[ $# -ne 1 || -z "$1" ]]; then
 		printf 'usage: %s BASE_GIT_REF\n' "$0" >&2
@@ -190,6 +207,7 @@ main() {
 		printf 'ERROR: identity checks require full history; fetch full history and release tags\n' >&2
 		return 1
 	fi
+	verify_release_tags || return 1
 	source_bundles="$(bundle_names "$base_ref" rules)" || { printf 'ERROR: cannot enumerate source bundles\n' >&2; return 1; }
 	published_bundles="$(bundle_names "$base_ref" published)" || { printf 'ERROR: cannot enumerate published bundles\n' >&2; return 1; }
 	# Every v* tag is a release input, including releases off the base ancestry.

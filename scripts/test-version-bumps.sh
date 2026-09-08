@@ -58,6 +58,7 @@ fixture() {
 	git -C "$directory" init -q
 	git -C "$directory" config user.email rules-test@example.invalid
 	git -C "$directory" config user.name 'Rules version test'
+	git -C "$directory" remote add origin "$directory"
 	mkdir -p "$directory/rules/demo/dlp" "$directory/published/demo"
 	printf '%s\n' 'rule: original' >"$directory/rules/demo/dlp/example.yaml"
 	printf '%s\n' \
@@ -168,9 +169,38 @@ directory="$(fixture)"
 mv "$directory/published/demo" "$directory/retained-demo"
 expect_gate fail "$directory"
 
+# Full history without release tags must fail before it can miss an off-branch
+# identity. Fetching the tags repairs the input but still rejects changed bytes.
+origin="$(fixture)"
+sed -i 's/version: "1.0.0"/version: "2.0.0"/' "$origin/published/demo/bundle.yaml"
+git -C "$origin" add published/demo/bundle.yaml
+tree="$(git -C "$origin" write-tree)"
+commit="$(git -C "$origin" commit-tree "$tree" -m off-branch-release)"
+git -C "$origin" update-ref refs/tags/v2.0.0 "$commit"
+directory="$(mktemp -d "${TMPDIR:-/tmp}/pipelock-rules-version-bumps.XXXXXX")"
+git clone --quiet --no-tags "$origin" "$directory"
+[[ "$(git -C "$directory" rev-parse --is-shallow-repository)" == false ]]
+expect_gate fail "$directory"
+git -C "$directory" fetch --quiet --tags origin
+expect_gate pass "$directory"
+sed -i 's/version: "1.0.0"/version: "2.0.0"/; s/rules: \[\]/rules: [changed]/' "$directory/published/demo/bundle.yaml"
+expect_gate fail "$directory"
+
+# A same-named local tag pointing at different bytes is not complete input.
+git -C "$directory" show HEAD:published/demo/bundle.yaml >"$directory/published/demo/bundle.yaml"
+expect_gate pass "$directory"
+git -C "$directory" update-ref refs/tags/v2.0.0 HEAD
+expect_gate fail "$directory"
+
+# Offline/unavailable origin is an error, not evidence of no releases.
+git -C "$directory" update-ref refs/tags/v2.0.0 "$commit"
+expect_gate pass "$directory"
+git -C "$directory" remote set-url origin "$directory/missing-origin"
+expect_gate fail "$directory"
+
 # Failed history or filesystem queries must never become empty successful scans.
 directory="$(fixture)"
-for GATE_FAIL_SUBCOMMAND in tag ls-tree hash-object diff show rev-parse; do
+for GATE_FAIL_SUBCOMMAND in tag ls-tree hash-object diff show rev-parse ls-remote; do
 	export GATE_FAIL_SUBCOMMAND
 	git() {
 		[[ "$1" != "$GATE_FAIL_SUBCOMMAND" ]] || return 93
