@@ -205,6 +205,17 @@ expect_gate fail "$directory"
 # Offline/unavailable origin is an error, not evidence of no releases.
 git -C "$directory" update-ref refs/tags/v2.0.0 "$commit"
 expect_gate pass "$directory"
+
+# Local scratch tags are not releases and must not affect the origin-backed gate.
+sed -i 's/rules: \[\]/rules: [local-scratch]/' "$directory/published/demo/bundle.yaml"
+git -C "$directory" add published/demo/bundle.yaml
+tree="$(git -C "$directory" write-tree)"
+scratch_commit="$(git -C "$directory" commit-tree "$tree" -m local-scratch)"
+git -C "$directory" update-ref refs/tags/v-local "$scratch_commit"
+git -C "$directory" show HEAD:published/demo/bundle.yaml >"$directory/published/demo/bundle.yaml"
+git -C "$directory" read-tree HEAD
+expect_gate pass "$directory"
+
 git -C "$directory" remote set-url origin "$directory/missing-origin"
 expect_gate fail "$directory"
 
@@ -247,7 +258,7 @@ done
 
 # Failed history or filesystem queries must never become empty successful scans.
 directory="$(fixture)"
-for GATE_FAIL_SUBCOMMAND in tag ls-tree hash-object diff show rev-parse ls-remote; do
+for GATE_FAIL_SUBCOMMAND in ls-tree hash-object diff show rev-parse ls-remote; do
 	export GATE_FAIL_SUBCOMMAND
 	git() {
 		[[ "$1" != "$GATE_FAIL_SUBCOMMAND" ]] || return 93
@@ -263,6 +274,8 @@ unset GATE_FAIL_SUBCOMMAND
 git() {
 	if [[ "$1" == ls-remote ]]; then
 		[[ "${GIT_TERMINAL_PROMPT:-}" == 0 ]] || return 94
+		[[ "${GIT_SSH_COMMAND:-}" == *-oBatchMode=yes* ]] || return 95
+		[[ "${GIT_SSH_COMMAND:-}" == *-oStrictHostKeyChecking=yes* ]] || return 96
 		sleep 60
 		return 0
 	fi

@@ -7,6 +7,7 @@ set -euo pipefail
 export GIT_NO_REPLACE_OBJECTS=1
 
 component_cmp=0
+verified_release_tags=""
 
 compare_version_component() {
 	local left="$1" right="$2"
@@ -103,7 +104,9 @@ bundle_identity_from_git() {
 }
 
 # Filesystem reads follow links while Git hashes the stored link text. Require
-# real bundle directories and regular files before comparing either view.
+# real bundle directories and regular files before comparing either view. The
+# candidate intentionally comes from the working tree for local pre-commit use;
+# CI checks the committed candidate through a fresh checkout.
 validate_worktree_layout() {
 	local root entry links
 	for root in rules published; do
@@ -132,26 +135,26 @@ validate_worktree_layout() {
 }
 
 validate_history_layout() {
-	local ref="$1" root entries mode type object name bundle_entries
+	local ref="$1" display_ref="${2:-$1}" root entries mode type object name bundle_entries
 	for root in rules published; do
 		entries="$(git ls-tree "$ref" -- "$root")" || return 1
 		[[ -n "$entries" ]] || continue
 		read -r mode type object name <<< "$entries"
 		[[ "$mode" == 040000 && "$type" == tree ]] || {
-			printf 'ERROR: %s:%s is not a directory\n' "$ref" "$root" >&2; return 1;
+			printf 'ERROR: %s:%s is not a directory\n' "$display_ref" "$root" >&2; return 1;
 		}
 		entries="$(git ls-tree "$ref:$root")" || return 1
 		while read -r mode type object name; do
 			[[ -n "$mode" ]] || continue
 			if [[ "$mode" != 040000 || "$type" != tree || ! "$name" =~ ^[a-z0-9][a-z0-9-]*$ ]]; then
-				printf 'ERROR: unsupported bundle entry in %s:%s\n' "$ref" "$root" >&2
+				printf 'ERROR: unsupported bundle entry in %s:%s\n' "$display_ref" "$root" >&2
 				return 1
 			fi
 			[[ "$root" == published ]] || continue
 			bundle_entries="$(git ls-tree "$ref:$root/$name" -- bundle.yaml)" || return 1
 			read -r mode type object name <<< "$bundle_entries"
 			if [[ "$type" != blob || ( "$mode" != 100644 && "$mode" != 100755 ) ]]; then
-				printf 'ERROR: %s has a missing or non-regular published bundle.yaml\n' "$ref" >&2
+				printf 'ERROR: %s has a missing or non-regular published bundle.yaml\n' "$display_ref" >&2
 				return 1
 			fi
 		done <<< "$entries"
@@ -174,7 +177,7 @@ check_published_identity() {
 	local base_ref="$1" bundle="$2" tags="$3"
 	local current_file="published/$bundle/bundle.yaml"
 	local base_file="$base_ref:$current_file" current_blob base_blob tag tag_path tag_blob
-	local current_name current_version historical_name historical_version base_path tag_paths
+	local current_name current_version historical_name historical_version base_path tag_paths tag_name
 	if [[ -L "$current_file" || ! -f "$current_file" ]]; then
 		printf 'ERROR: published/%s/bundle.yaml was removed\n' "$bundle" >&2
 		return 1
@@ -208,13 +211,13 @@ check_published_identity() {
 			return 1
 		fi
 	fi
-	while IFS= read -r tag; do
+	while IFS=$'\t' read -r tag tag_name; do
 		[[ -n "$tag" ]] || continue
 		tag_paths="$(git ls-tree -r --name-only "$tag" -- published)" || return 1
 		while IFS= read -r tag_path; do
 			[[ "$tag_path" =~ ^published/[^/]+/bundle\.yaml$ ]] || continue
 			if ! bundle_identity_from_git "$tag:$tag_path"; then
-				printf 'ERROR: invalid published identity in release tag %s: %s\n' "$tag" "$tag_path" >&2
+				printf 'ERROR: invalid published identity in release tag %s: %s\n' "$tag_name" "$tag_path" >&2
 				return 1
 			fi
 			historical_name="$bundle_name"
@@ -225,7 +228,7 @@ check_published_identity() {
 			tag_blob="$(git rev-parse "$tag:$tag_path")" || return 1
 			if [[ "$current_blob" != "$tag_blob" ]]; then
 				printf 'ERROR: published bundle identity %s@%s changed bytes from release tag %s\n' \
-					"$current_name" "$current_version" "$tag" >&2
+					"$current_name" "$current_version" "$tag_name" >&2
 				return 1
 			fi
 		done <<< "$tag_paths"
@@ -235,11 +238,24 @@ check_published_identity() {
 
 # A non-shallow clone can still omit tags (for example, clone --no-tags).
 # Compare tag objects, not just names, with the same origin used by CI.
-# The caller owns Git configuration and must not mutate refs during this check.
-# CI uses a fresh checkout; locally this checks uncommitted working-tree edits.
+# The caller owns Git configuration and the mutable candidate working tree.
+# CI uses a fresh checkout; locally this checks uncommitted edits.
 verify_release_tags() {
-	local remote_tags remote_oid ref local_oid
-	if ! remote_tags="$(GIT_TERMINAL_PROMPT=0 timeout --kill-after=5s 30s bash -c 'git "$@"' -- ls-remote --refs origin 'refs/tags/v*')"; then
+	local remote_tags remote_oid ref local_oid peeled_oid tag_name deadline
+	verified_release_tags=""
+	if command -v timeout >/dev/null 2>&1; then
+		deadline=timeout
+	elif command -v gtimeout >/dev/null 2>&1; then
+		deadline=gtimeout
+	else
+		printf 'ERROR: release tag verification requires GNU timeout (timeout or gtimeout)\n' >&2
+		return 1
+	fi
+	if ! "$deadline" --kill-after=1s 1s true >/dev/null 2>&1; then
+		printf 'ERROR: release tag verification requires GNU timeout (timeout or gtimeout)\n' >&2
+		return 1
+	fi
+	if ! remote_tags="$(GIT_TERMINAL_PROMPT=0 GIT_SSH_COMMAND='ssh -oBatchMode=yes -oStrictHostKeyChecking=yes' "$deadline" --kill-after=5s 30s bash -c 'git "$@"' -- ls-remote --refs origin 'refs/tags/v*')"; then
 		printf 'ERROR: cannot verify release tags against origin; check remote access and retry\n' >&2
 		return 1
 	fi
@@ -249,6 +265,9 @@ verify_release_tags() {
 			printf 'ERROR: release tag %s is missing or differs from origin; fetch release tags and retry\n' "$ref" >&2
 			return 1
 		fi
+		peeled_oid="$(git rev-parse --verify "$ref^{}" 2>/dev/null)" || return 1
+		tag_name="${ref#refs/tags/}"
+		verified_release_tags+="${verified_release_tags:+$'\n'}${peeled_oid}"$'\t'"${tag_name}"
 	done <<< "$remote_tags"
 }
 
@@ -258,7 +277,7 @@ main() {
 		return 2
 	fi
 	local base_ref="$1" status=0 bundle current_file current_version previous_version
-	local source_bundles published_bundles tags shallow base_path diff_status tag
+	local source_bundles published_bundles tags shallow base_path diff_status tag tag_name
 	if ! git cat-file -e "${base_ref}^{commit}" 2>/dev/null; then
 		printf 'ERROR: base ref is unavailable: %s\n' "$base_ref" >&2
 		return 1
@@ -273,11 +292,12 @@ main() {
 	validate_history_layout "$base_ref" || return 1
 	source_bundles="$(bundle_names "$base_ref" rules)" || { printf 'ERROR: cannot enumerate source bundles\n' >&2; return 1; }
 	published_bundles="$(bundle_names "$base_ref" published)" || { printf 'ERROR: cannot enumerate published bundles\n' >&2; return 1; }
-	# Every v* tag is a release input, including releases off the base ancestry.
-	tags="$(git tag --list 'v*')" || { printf 'ERROR: cannot enumerate release tags\n' >&2; return 1; }
-	while IFS= read -r tag; do
+	# Every origin-verified release object is an input, including releases off
+	# the base ancestry. Pinned object IDs cannot be retargeted during the run.
+	tags="$verified_release_tags"
+	while IFS=$'\t' read -r tag tag_name; do
 		[[ -n "$tag" ]] || continue
-		validate_history_layout "$tag" || return 1
+		validate_history_layout "$tag" "$tag_name" || return 1
 	done <<< "$tags"
 	while IFS= read -r bundle; do
 		[[ -n "$bundle" ]] || continue
