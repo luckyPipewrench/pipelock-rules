@@ -392,7 +392,7 @@ class BundleAgreementTest(unittest.TestCase):
     def test_ci_and_release_pin_the_same_pipelock_candidate(self):
         self.assertEqual(
             generator.pipelock_candidate_ref(),
-            "24f823d4194d69daa60e4ddce0bdc8f005bb1e1b",
+            "3e868ac5d5b62d3a2790958542171143af8a0e38",
         )
 
     def test_different_ci_and_release_candidate_refs_are_rejected(self):
