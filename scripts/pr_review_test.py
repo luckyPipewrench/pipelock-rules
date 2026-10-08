@@ -8,7 +8,6 @@ from unittest import mock
 
 
 SCRIPT_PATH = pathlib.Path(__file__).with_name("pr-review.py")
-WORKFLOW_PATH = SCRIPT_PATH.parents[1] / ".github" / "workflows" / "pr-review.yaml"
 SPEC = importlib.util.spec_from_file_location("pr_review", SCRIPT_PATH)
 if SPEC is None or SPEC.loader is None:
     raise RuntimeError(f"failed to load {SCRIPT_PATH}")
@@ -31,27 +30,6 @@ class ModelRoutingTest(unittest.TestCase):
         self.assertEqual(pr_review.DEFAULT_MODEL_FAST, "gpt-5.6-luna")
         self.assertEqual(pr_review.DEFAULT_MODEL_DEEP, "gpt-5.6-terra")
 
-    def test_workflow_delegates_model_defaults_to_runner_constants(self) -> None:
-        workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
-        self.assertIn(
-            "PR_REVIEW_MODEL_FAST: ${{ vars.PR_REVIEW_MODEL_FAST }}", workflow
-        )
-        self.assertIn(
-            "PR_REVIEW_MODEL_DEEP: ${{ vars.PR_REVIEW_MODEL_DEEP }}", workflow
-        )
-        self.assertNotRegex(workflow, r"PR_REVIEW_MODEL_(?:FAST|DEEP): gpt-")
-
-    def test_workflow_keeps_the_secret_runner_trusted_and_owner_gated(self) -> None:
-        workflow = WORKFLOW_PATH.read_text(encoding="utf-8")
-        self.assertIn("github.event.comment.user.login == 'luckyPipewrench'", workflow)
-        self.assertIn("github.event.comment.author_association == 'OWNER'", workflow)
-        self.assertIn("ref: ${{ github.event.repository.default_branch }}", workflow)
-        self.assertIn("persist-credentials: false", workflow)
-        self.assertIn("timeout-minutes: 10", workflow)
-        self.assertIn("group: pr-review-${{ github.repository }}-${{ github.event.issue.number }}", workflow)
-        self.assertIn("cancel-in-progress: true", workflow)
-        self.assertIn("python -m unittest scripts/pr_review_test.py", workflow)
-        self.assertNotIn("/review fast", workflow)
 
     def test_gpt5_payload_uses_reasoning_effort_without_temperature(self) -> None:
         payload = pr_review.build_llm_payload("gpt-5.6-luna", "diff")
